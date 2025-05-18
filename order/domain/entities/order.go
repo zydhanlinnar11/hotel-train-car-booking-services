@@ -129,6 +129,17 @@ func PlaceOrder(
 		OrderStatusPlaced,
 	)
 
+	o.events = append(o.events, events.NewOrderPlaced(
+		o.id.String(),
+		hotelRoomId,
+		hotelRoomStartDate.String(),
+		hotelRoomEndDate.String(),
+		carId,
+		carStartDate.String(),
+		carEndDate.String(),
+		trainSeatId,
+	))
+
 	return o
 }
 
