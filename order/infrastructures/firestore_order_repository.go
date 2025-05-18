@@ -81,8 +81,8 @@ func (r *FirestoreOrderRepository) convertToSerializableEvents(evs []events.Even
 	serializableEvents := make([]Event, 0)
 	for _, event := range evs {
 		newEvent := Event{
-			Name:    event.Name(),
-			Payload: event.Timestamp(),
+			Name: event.Name(),
+			Time: event.Timestamp(),
 		}
 		switch e := event.(type) {
 		case *events.OrderPlaced:
