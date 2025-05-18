@@ -18,6 +18,19 @@ const (
 
 type OrderReleaseCause int
 
+func NewOrderReleaseCause(cause int) OrderReleaseCause {
+	switch cause {
+	case OrderReleaseCauseHotelRoomNotAvailable.Int():
+		return OrderReleaseCauseHotelRoomNotAvailable
+	case OrderReleaseCauseCarNotAvailable.Int():
+		return OrderReleaseCauseCarNotAvailable
+	case OrderReleaseCauseTrainSeatNotAvailable.Int():
+		return OrderReleaseCauseTrainSeatNotAvailable
+	default:
+		return OrderReleaseCauseOther
+	}
+}
+
 func (c OrderReleaseCause) Int() int {
 	return int(c)
 }
