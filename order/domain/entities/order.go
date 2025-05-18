@@ -164,6 +164,10 @@ func (o *Order) TrainSeatId() string {
 	return o.trainSeatId
 }
 
+func (o *Order) FailureCause() OrderFailureCause {
+	return o.failureCause
+}
+
 func (o *Order) Version() int {
 	return o.version
 }
