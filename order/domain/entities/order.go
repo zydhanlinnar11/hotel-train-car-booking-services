@@ -113,7 +113,7 @@ func PlaceOrder(
 	carEndDate values.Date,
 	trainSeatId string,
 ) *Order {
-	id := idGen.Generate()
+	id := values.GenerateOrderId(idGen)
 
 	o := NewOrder(
 		id,

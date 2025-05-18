@@ -9,7 +9,7 @@ var (
 )
 
 type OrderIdGenerator interface {
-	Generate() OrderId
+	Generate() string
 }
 
 type OrderIdValidator interface {
@@ -22,6 +22,12 @@ func NewOrderId(id string, v OrderIdValidator) (OrderId, error) {
 	}
 
 	return OrderId(id), nil
+}
+
+func GenerateOrderId(g OrderIdGenerator) OrderId {
+	id := g.Generate()
+
+	return OrderId(id)
 }
 
 func (o OrderId) String() string {
