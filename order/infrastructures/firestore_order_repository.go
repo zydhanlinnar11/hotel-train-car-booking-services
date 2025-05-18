@@ -2,6 +2,7 @@ package infrastructures
 
 import (
 	"context"
+	"fmt"
 
 	"cloud.google.com/go/firestore"
 	"github.com/zydhanlinnar11/sister/ec/order/domain/entities"
@@ -76,7 +77,7 @@ func (r *FirestoreOrderRepository) FindById(ctx context.Context, id string) (*en
 	return order, nil
 }
 
-func (r *FirestoreOrderRepository) convertToSerializableEvents(ctx context.Context, evs []events.Event) []Event {
+func (r *FirestoreOrderRepository) convertToSerializableEvents(evs []events.Event) []Event {
 	serializableEvents := make([]Event, 0)
 	for _, event := range evs {
 		newEvent := Event{
@@ -123,7 +124,7 @@ func (r *FirestoreOrderRepository) convertToSerializableEvents(ctx context.Conte
 	return serializableEvents
 }
 
-func (r *FirestoreOrderRepository) serializeOrder(ctx context.Context, order *entities.Order) Order {
+func (r *FirestoreOrderRepository) serializeOrder(order *entities.Order) Order {
 	return Order{
 		Id:                 order.Id().String(),
 		HotelRoomId:        order.HotelRoomId(),
@@ -140,8 +141,8 @@ func (r *FirestoreOrderRepository) serializeOrder(ctx context.Context, order *en
 }
 
 func (r *FirestoreOrderRepository) Save(ctx context.Context, order *entities.Order) error {
-	events := r.convertToSerializableEvents(ctx, order.Events())
-	serializedOrder := r.serializeOrder(ctx, order)
+	events := r.convertToSerializableEvents(order.Events())
+	serializedOrder := r.serializeOrder(order)
 	orderRef := r.client.Collection(OrderCollection).Doc(serializedOrder.Id)
 
 	err := r.client.RunTransaction(ctx, func(ctx context.Context, t *firestore.Transaction) error {
@@ -150,7 +151,7 @@ func (r *FirestoreOrderRepository) Save(ctx context.Context, order *entities.Ord
 			return err
 		}
 
-		if orderDoc != nil {
+		if err == nil {
 			var existingOrder Order
 			if err := orderDoc.DataTo(&existingOrder); err != nil {
 				return err
@@ -178,5 +179,5 @@ func (r *FirestoreOrderRepository) Save(ctx context.Context, order *entities.Ord
 		return nil
 	})
 
-	return err
+	return fmt.Errorf("failed to do the transaction: %w", err)
 }
