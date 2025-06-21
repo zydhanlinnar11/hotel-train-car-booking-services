@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  coordinator:
+    build: .
+    ports:
+      - '8080:8080'
+    environment:
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      - PORT=8080
+      - TRANSACTION_TIMEOUT=30s
+      - MAX_RETRIES=3
+      - RETRY_DELAY=2s
+      - HOTEL_SERVICE_URL=http://localhost:8081
+      - CAR_SERVICE_URL=http://localhost:8082
+      - TRAIN_SERVICE_URL=http://localhost:8083
+    volumes:
+      - ./.env:/app/.env:ro
+    depends_on:
+      - firestore-emulator
+    networks:
+      - twophase-network
+
+  firestore-emulator:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+    ports:
+      - '8081:8080'
+    command: gcloud emulators firestore start --host-port=0.0.0.0:8080
+    environment:
+      - FIRESTORE_PROJECT_ID=${GOOGLE_CLOUD_PROJECT:-test-project}
+    networks:
+      - twophase-network
+
+networks:
+  twophase-network:
+    driver: bridge
