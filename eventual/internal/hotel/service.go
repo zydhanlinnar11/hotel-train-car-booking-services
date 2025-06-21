@@ -3,6 +3,7 @@ package hotel
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 
 	"github.com/google/uuid"
@@ -45,11 +46,18 @@ func (s *service) publishErrorEvent(ctx context.Context, msg event.Message, err 
 	return err
 }
 
-// TODO: Handle room yang sudah di reserve
 func (s *service) handleReserveRoom(ctx context.Context, msg event.Message) error {
 	payload, err := mapToPayload[event.ReserveRoomPayload](msg)
 	if err != nil {
 		return s.publishErrorEvent(ctx, msg, err)
+	}
+
+	isAvailable, err := s.repo.IsHotelRoomAvailable(ctx, payload.RoomID, payload.StartDate, payload.EndDate)
+	if err != nil {
+		return s.publishErrorEvent(ctx, msg, err)
+	}
+	if !isAvailable {
+		return s.publishErrorEvent(ctx, msg, errors.New("hotel room is not available"))
 	}
 
 	hotelRoom, err := s.repo.GetHotelRoomByID(ctx, payload.RoomID)
