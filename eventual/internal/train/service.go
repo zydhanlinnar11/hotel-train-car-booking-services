@@ -66,19 +66,11 @@ func (s *service) handleReserveSeat(ctx context.Context, msg event.Message) erro
 	}
 
 	trainReservation := &TrainReservation{
-		ID:            uuid.NewString(),
-		SeatID:        trainSeat.SeatID,
-		TrainNumber:   trainSeat.TrainNumber,
-		CarNumber:     trainSeat.CarNumber,
-		SeatNumber:    trainSeat.SeatNumber,
-		Class:         trainSeat.Class,
-		Price:         trainSeat.Price,
-		FromStation:   trainSeat.FromStation,
-		ToStation:     trainSeat.ToStation,
-		DepartureTime: trainSeat.DepartureTime,
-		ArrivalTime:   trainSeat.ArrivalTime,
-		OrderID:       msg.CorrelationID,
-		Status:        TrainReservationStatusReserved,
+		ID:        uuid.NewString(),
+		SeatID:    trainSeat.SeatID,
+		TrainName: trainSeat.TrainName,
+		OrderID:   msg.CorrelationID,
+		Status:    TrainReservationStatusReserved,
 	}
 
 	if err := s.repo.CreateTrainReservation(ctx, trainReservation); err != nil {

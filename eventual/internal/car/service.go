@@ -66,18 +66,13 @@ func (s *service) handleReserveCar(ctx context.Context, msg event.Message) error
 	}
 
 	carReservation := &CarReservation{
-		ID:          uuid.NewString(),
-		CarID:       car.CarID,
-		CarName:     car.CarName,
-		CarBrand:    car.Brand,
-		CarModel:    car.Model,
-		CarYear:     car.Year,
-		CarPrice:    car.Price,
-		CarLocation: car.Location,
-		StartDate:   payload.StartDate,
-		EndDate:     payload.EndDate,
-		OrderID:     msg.CorrelationID,
-		Status:      CarReservationStatusReserved,
+		ID:        uuid.NewString(),
+		CarID:     car.ID,
+		CarName:   car.Name,
+		StartDate: payload.StartDate,
+		EndDate:   payload.EndDate,
+		OrderID:   msg.CorrelationID,
+		Status:    CarReservationStatusReserved,
 	}
 
 	if err := s.repo.CreateCarReservation(ctx, carReservation); err != nil {

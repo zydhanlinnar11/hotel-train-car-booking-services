@@ -68,8 +68,8 @@ func (s *service) handleReserveRoom(ctx context.Context, msg event.Message) erro
 	hotelReservation := &HotelReservation{
 		ID:                 uuid.NewString(),
 		HotelRoomID:        hotelRoom.ID,
-		HotelRoomName:      hotelRoom.Name,
-		HotelRoomPrice:     hotelRoom.Price,
+		HotelRoomName:      hotelRoom.RoomName,
+		HotelName:          hotelRoom.HotelName,
 		HotelRoomStartDate: payload.StartDate,
 		HotelRoomEndDate:   payload.EndDate,
 		OrderID:            msg.CorrelationID,

@@ -10,18 +10,12 @@ const (
 	CommandReserveSeat EventName = "booking.command.reserve.seat"
 
 	// Events dari Partisipan ke Order Service
-	RoomReserved             EventName = "booking.event.room.reserved"
-	RoomBookingConfirmed     EventName = "booking.event.room.booking.confirmed"
-	RoomReservationCancelled EventName = "booking.event.room.reservation.cancelled"
-	RoomReservationFailed    EventName = "booking.event.room.failed"
-	CarReserved              EventName = "booking.event.car.reserved"
-	CarBookingConfirmed      EventName = "booking.event.car.booking.confirmed"
-	CarReservationCancelled  EventName = "booking.event.car.reservation.cancelled"
-	CarReservationFailed     EventName = "booking.event.car.failed"
-	SeatBookingConfirmed     EventName = "booking.event.seat.booking.confirmed"
-	SeatReserved             EventName = "booking.event.seat.reserved"
-	SeatReservationCancelled EventName = "booking.event.seat.reservation.cancelled"
-	SeatReservationFailed    EventName = "booking.event.seat.failed"
+	RoomReserved          EventName = "booking.event.room.reserved"
+	RoomReservationFailed EventName = "booking.event.room.failed"
+	CarReserved           EventName = "booking.event.car.reserved"
+	CarReservationFailed  EventName = "booking.event.car.failed"
+	SeatReserved          EventName = "booking.event.seat.reserved"
+	SeatReservationFailed EventName = "booking.event.seat.failed"
 
 	// Commands Kompensasi dari Order Service
 	CommandCancelRoom EventName = "booking.command.cancel.room"
@@ -29,9 +23,8 @@ const (
 	CommandCancelSeat EventName = "booking.command.cancel.seat"
 
 	// Event Final
-	OrderBooked    EventName = "booking.event.order.booked"
-	OrderFailed    EventName = "booking.event.order.failed"
-	OrderCompleted EventName = "booking.event.order.completed"
+	OrderBooked EventName = "booking.event.order.booked"
+	OrderFailed EventName = "booking.event.order.failed"
 )
 
 // Message adalah struktur dasar untuk setiap pesan di RabbitMQ
