@@ -2,6 +2,7 @@ package order
 
 import (
 	"context"
+	"time"
 
 	"cloud.google.com/go/firestore"
 )
@@ -13,6 +14,10 @@ type Repository interface {
 	UpdateOrder(ctx context.Context, order *Order) error
 }
 
+const (
+	collectionName = "order_orders"
+)
+
 // firestoreRepository adalah implementasi konkritnya
 type firestoreRepository struct {
 	client *firestore.Client
@@ -23,12 +28,12 @@ func NewFirestoreRepository(client *firestore.Client) Repository {
 }
 
 func (r *firestoreRepository) CreateOrder(ctx context.Context, order *Order) error {
-	_, err := r.client.Collection("orders").Doc(order.ID).Set(ctx, order)
+	_, err := r.client.Collection(collectionName).Doc(order.ID).Set(ctx, order)
 	return err
 }
 
 func (r *firestoreRepository) GetOrderByID(ctx context.Context, id string) (*Order, error) {
-	doc, err := r.client.Collection("orders").Doc(id).Get(ctx)
+	doc, err := r.client.Collection(collectionName).Doc(id).Get(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -40,6 +45,13 @@ func (r *firestoreRepository) GetOrderByID(ctx context.Context, id string) (*Ord
 }
 
 func (r *firestoreRepository) UpdateOrder(ctx context.Context, order *Order) error {
-	_, err := r.client.Collection("orders").Doc(order.ID).Set(ctx, order)
+	_, err := r.client.Collection(collectionName).Doc(order.ID).Set(ctx, order)
+	if err != nil {
+		return err
+	}
+
+	// Update updated_at
+	order.UpdatedAt = time.Now()
+	_, err = r.client.Collection(collectionName).Doc(order.ID).Set(ctx, order)
 	return err
 }

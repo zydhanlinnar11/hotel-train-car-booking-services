@@ -5,19 +5,20 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/zydhanlinnar11/hotel-train-car-booking-services/eventual/pkg/config"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/eventual/pkg/event"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/eventual/pkg/messagebus"
 )
 
 type CreateOrderPayload struct {
-	HotelRoomID        string `json:"hotel_room_id"`
-	HotelRoomStartDate string `json:"hotel_room_start_date"`
-	HotelRoomEndDate   string `json:"hotel_room_end_date"`
-	CarID              string `json:"car_id"`
-	CarStartDate       string `json:"car_start_date"`
-	CarEndDate         string `json:"car_end_date"`
-	TrainSeatID        string `json:"train_seat_id"`
-	UserID             string `json:"user_id"`
+	HotelRoomID        string `json:"hotel_room_id" binding:"required"`
+	HotelRoomStartDate string `json:"hotel_room_start_date" binding:"required"`
+	HotelRoomEndDate   string `json:"hotel_room_end_date" binding:"required"`
+	CarID              string `json:"car_id" binding:"required"`
+	CarStartDate       string `json:"car_start_date" binding:"required"`
+	CarEndDate         string `json:"car_end_date" binding:"required"`
+	TrainSeatID        string `json:"train_seat_id" binding:"required"`
+	UserID             string `json:"user_id" binding:"required"`
 }
 
 // Service mendefinisikan logika bisnis untuk Order Service
@@ -34,14 +35,56 @@ type service struct {
 	publisher messagebus.Publisher
 }
 
+func NewService(repo Repository, publisher messagebus.Publisher) Service {
+	return &service{repo: repo, publisher: publisher}
+}
+
+func (s *service) parseDate(hotelStartDateStr, hotelEndDateStr, carStartDateStr, carEndDateStr string) (time.Time, time.Time, time.Time, time.Time, error) {
+	hotelStartDate, err := time.Parse(config.DateFormat, hotelStartDateStr)
+	if err != nil {
+		return time.Time{}, time.Time{}, time.Time{}, time.Time{}, err
+	}
+	hotelEndDate, err := time.Parse(config.DateFormat, hotelEndDateStr)
+	if err != nil {
+		return time.Time{}, time.Time{}, time.Time{}, time.Time{}, err
+	}
+	carStartDate, err := time.Parse(config.DateFormat, carStartDateStr)
+	if err != nil {
+		return time.Time{}, time.Time{}, time.Time{}, time.Time{}, err
+	}
+	carEndDate, err := time.Parse(config.DateFormat, carEndDateStr)
+	if err != nil {
+		return time.Time{}, time.Time{}, time.Time{}, time.Time{}, err
+	}
+
+	return hotelStartDate, hotelEndDate, carStartDate, carEndDate, nil
+}
+
 func (s *service) StartSaga(ctx context.Context, payload CreateOrderPayload) (*Order, error) {
+	hotelStartDate, hotelEndDate, carStartDate, carEndDate, err := s.parseDate(
+		payload.HotelRoomStartDate,
+		payload.HotelRoomEndDate,
+		payload.CarStartDate,
+		payload.CarEndDate,
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	// 1. Buat Order baru dengan status PENDING
 	order := &Order{
 		ID:     uuid.NewString(),
 		UserID: payload.UserID,
 		Status: StatusPending,
 
-		Version:   1,
+		HotelRoomID:    payload.HotelRoomID,
+		CarID:          payload.CarID,
+		TrainSeatID:    payload.TrainSeatID,
+		HotelStartDate: hotelStartDate.Format(config.DateFormat),
+		HotelEndDate:   hotelEndDate.Format(config.DateFormat),
+		CarStartDate:   carStartDate.Format(config.DateFormat),
+		CarEndDate:     carEndDate.Format(config.DateFormat),
+
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

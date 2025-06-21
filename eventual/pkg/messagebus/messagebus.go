@@ -70,13 +70,23 @@ func (p *rabbitmqSubscriber) Subscribe(ctx context.Context, routingKey, queueNam
 	}
 
 	go func() {
-		for d := range msgs {
-			var e event.Message
-			if err := json.Unmarshal(d.Body, &e); err != nil {
-				log.Printf("Failed to unmarshal message: %v", err)
-				continue
+		for {
+			select {
+			case d, ok := <-msgs:
+				if !ok {
+					log.Printf("Message channel closed for queue: %s", queueName)
+					return
+				}
+				var e event.Message
+				if err := json.Unmarshal(d.Body, &e); err != nil {
+					log.Printf("Failed to unmarshal message: %v", err)
+					continue
+				}
+				handler(e)
+			case <-ctx.Done():
+				log.Printf("Context cancelled, stopping subscriber for queue: %s", queueName)
+				return
 			}
-			handler(e)
 		}
 	}()
 
