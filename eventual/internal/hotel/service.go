@@ -73,7 +73,7 @@ func (s *service) handleReserveRoom(ctx context.Context, msg event.Message) erro
 		HotelRoomStartDate: payload.StartDate,
 		HotelRoomEndDate:   payload.EndDate,
 		OrderID:            msg.CorrelationID,
-		Status:             HotelRoomStatusReserved,
+		Status:             HotelRoomReservationStatusReserved,
 	}
 
 	if err := s.repo.CreateHotelReservation(ctx, hotelReservation); err != nil {
@@ -114,7 +114,7 @@ func (s *service) handleCancelRoom(ctx context.Context, msg event.Message) error
 		return s.publishErrorEvent(ctx, msg, err)
 	}
 
-	hotelReservation.Status = HotelRoomStatusAvailable
+	hotelReservation.Status = HotelRoomReservationStatusCancelled
 	if err := s.repo.UpdateHotelReservation(ctx, hotelReservation); err != nil {
 		return s.publishErrorEvent(ctx, msg, err)
 	}

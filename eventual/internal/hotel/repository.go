@@ -84,7 +84,8 @@ func (r *firestoreRepository) IsHotelRoomAvailable(ctx context.Context, hotelRoo
 	query := r.client.Collection(hotelReservationCollection).
 		Where("hotel_room_id", "==", hotelRoomID).
 		Where("hotel_room_start_date", "<=", endDate).
-		Where("hotel_room_end_date", ">=", startDate)
+		Where("hotel_room_end_date", ">=", startDate).
+		Where("status", "!=", HotelRoomReservationStatusCancelled)
 
 	aggregationQuery := query.NewAggregationQuery().WithCount("all")
 	results, err := aggregationQuery.Get(ctx)
