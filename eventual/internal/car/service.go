@@ -6,7 +6,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/google/uuid"
+	"github.com/oklog/ulid/v2"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/eventual/pkg/event"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/eventual/pkg/messagebus"
 )
@@ -66,7 +66,7 @@ func (s *service) handleReserveCar(ctx context.Context, msg event.Message) error
 	}
 
 	carReservation := &CarReservation{
-		ID:        uuid.NewString(),
+		ID:        ulid.Make().String(),
 		CarID:     car.ID,
 		CarName:   car.Name,
 		StartDate: payload.StartDate,

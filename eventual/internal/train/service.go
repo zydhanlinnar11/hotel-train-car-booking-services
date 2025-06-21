@@ -6,7 +6,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/google/uuid"
+	"github.com/oklog/ulid/v2"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/eventual/pkg/event"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/eventual/pkg/messagebus"
 )
@@ -66,7 +66,7 @@ func (s *service) handleReserveSeat(ctx context.Context, msg event.Message) erro
 	}
 
 	trainReservation := &TrainReservation{
-		ID:        uuid.NewString(),
+		ID:        ulid.Make().String(),
 		SeatID:    trainSeat.SeatID,
 		TrainName: trainSeat.TrainName,
 		OrderID:   msg.CorrelationID,

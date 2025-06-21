@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/oklog/ulid/v2"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/eventual/pkg/config"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/eventual/pkg/event"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/eventual/pkg/messagebus"
@@ -75,7 +75,7 @@ func (s *service) StartSaga(ctx context.Context, payload CreateOrderPayload) (*O
 
 	// 1. Buat Order baru dengan status PENDING
 	order := &Order{
-		ID:     uuid.NewString(),
+		ID:     ulid.Make().String(),
 		UserID: payload.UserID,
 		Status: StatusPending,
 
