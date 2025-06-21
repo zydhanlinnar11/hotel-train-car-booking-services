@@ -32,6 +32,7 @@ func Seed(ctx context.Context, client *firestore.Client) error {
 	log.Println("Starting hotel room seeder...")
 
 	collection := client.Collection("hotel_rooms")
+	bw := client.BulkWriter(ctx)
 
 	for _, hotelName := range hotelBrands {
 		log.Printf("Seeding %s...", hotelName)
@@ -48,13 +49,14 @@ func Seed(ctx context.Context, client *firestore.Client) error {
 					RoomName:  roomName,
 				}
 
-				_, err := collection.Doc(roomID).Set(ctx, hotelRoom)
-				if err != nil {
-					return fmt.Errorf("failed to seed hotel room %s: %w", roomName, err)
-				}
+				docRef := collection.Doc(roomID)
+				bw.Set(docRef, hotelRoom)
 			}
 		}
 	}
+
+	// Flush all writes
+	bw.Flush()
 
 	log.Printf("Hotel room seeder completed. Total rooms: %d", len(hotelBrands)*5*20)
 	return nil

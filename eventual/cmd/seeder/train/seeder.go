@@ -27,6 +27,7 @@ func Seed(ctx context.Context, client *firestore.Client) error {
 	log.Println("Starting train seeder...")
 
 	collection := client.Collection("train_seats")
+	bw := client.BulkWriter(ctx)
 
 	for _, trainName := range trainNames {
 		log.Printf("Seeding %s...", trainName)
@@ -42,12 +43,13 @@ func Seed(ctx context.Context, client *firestore.Client) error {
 				TrainName: trainName,
 			}
 
-			_, err := collection.Doc(seatDocID).Set(ctx, trainSeat)
-			if err != nil {
-				return fmt.Errorf("failed to seed train seat %s seat %s: %w", trainName, seatID, err)
-			}
+			docRef := collection.Doc(seatDocID)
+			bw.Set(docRef, trainSeat)
 		}
 	}
+
+	// Flush all writes
+	bw.Flush()
 
 	log.Printf("Train seeder completed. Total seats: %d", len(trainNames)*500)
 	return nil

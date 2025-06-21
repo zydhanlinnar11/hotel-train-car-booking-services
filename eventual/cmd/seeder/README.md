@@ -1,6 +1,13 @@
 # Database Seeder
 
-Seeder untuk mengisi data awal ke Firestore database dengan strategi yang telah ditentukan. Seeder menggunakan model yang sudah ada di `internal/*/model.go`.
+Seeder untuk mengisi data awal ke Firestore database dengan strategi yang telah ditentukan. Seeder menggunakan model yang sudah ada di `internal/*/model.go` dan **BulkWriter** untuk performa optimal.
+
+## Fitur Utama
+
+- **BulkWriter**: Menggunakan Firestore BulkWriter untuk operasi batch write yang lebih efisien
+- **Model Consistency**: Menggunakan model yang sama dengan aplikasi utama
+- **Progress Logging**: Log progress untuk setiap jenis data
+- **Error Handling**: Proper error handling dengan context
 
 ## Struktur Data
 
@@ -117,3 +124,12 @@ Seeder menggunakan model yang sudah ada di internal packages:
 - **Car**: `internal/car/model.go` - `Car{ID, Name}`
 - **HotelRoom**: `internal/hotel/model.go` - `HotelRoom{ID, HotelName, RoomName}`
 - **TrainSeat**: `internal/train/model.go` - `TrainSeat{ID, SeatID, TrainName}`
+
+## Performa
+
+Dengan menggunakan **BulkWriter**, seeder dapat:
+
+- Menulis ribuan dokumen secara batch
+- Mengurangi latency network
+- Meningkatkan throughput secara signifikan
+- Mengoptimalkan penggunaan quota Firestore

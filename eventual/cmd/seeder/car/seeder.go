@@ -30,6 +30,7 @@ func Seed(ctx context.Context, client *firestore.Client) error {
 	log.Println("Starting car seeder...")
 
 	collection := client.Collection("cars")
+	bw := client.BulkWriter(ctx)
 
 	for _, brandData := range carBrands {
 		for _, model := range brandData.models {
@@ -44,13 +45,14 @@ func Seed(ctx context.Context, client *firestore.Client) error {
 					Name: carName,
 				}
 
-				_, err := collection.Doc(carID).Set(ctx, carData)
-				if err != nil {
-					return fmt.Errorf("failed to seed car %s: %w", carName, err)
-				}
+				docRef := collection.Doc(carID)
+				bw.Set(docRef, carData)
 			}
 		}
 	}
+
+	// Flush all writes
+	bw.Flush()
 
 	log.Printf("Car seeder completed. Total cars: %d", len(carBrands)*5*100)
 	return nil
