@@ -1,0 +1,47 @@
+# File: docker-compose.yml
+
+services:
+  rabbitmq:
+    # Menggunakan image RabbitMQ resmi dengan management plugin sudah terinstal.
+    # Plugin ini memberikan kita UI berbasis web yang sangat berguna.
+    image: rabbitmq:4-management
+
+    # Memberi nama container agar mudah diidentifikasi.
+    container_name: sister-eventual-rabbitmq
+
+    # Menetapkan hostname untuk container.
+    hostname: sister-eventual-rabbitmq
+
+    # Port mapping: [PORT_DI_MESIN_ANDA]:[PORT_DI_DALAM_CONTAINER]
+    ports:
+      # Port 5672 adalah port standar AMQP untuk aplikasi Anda terhubung.
+      - '5672:5672'
+      # # Port 15672 adalah port untuk mengakses Management UI dari browser.
+      - '15672:15672'
+
+    # Volumes untuk persistensi data.
+    # Ini memastikan data antrian dan log tidak hilang jika container di-restart.
+    volumes:
+      - sister-eventual-rabbitmq_data:/var/lib/rabbitmq/
+      - sister-eventual-rabbitmq_log:/var/log/rabbitmq
+
+    # Environment variables untuk login.
+    # Secara default, user/pass adalah guest/guest.
+    # Anda bisa mengubahnya di sini jika perlu.
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+    # Mendefinisikan network kustom untuk layanan ini.
+    networks:
+      - sister-eventual-network
+
+# Mendefinisikan volume yang akan dibuat oleh Docker.
+volumes:
+  sister-eventual-rabbitmq_data:
+  sister-eventual-rabbitmq_log:
+
+# Mendefinisikan network yang akan dibuat oleh Docker.
+networks:
+  sister-eventual-network:
+    driver: bridge
