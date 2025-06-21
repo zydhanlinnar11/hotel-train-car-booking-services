@@ -1,0 +1,106 @@
+# Database Seeder
+
+Seeder untuk mengisi data awal ke Firestore database dengan strategi yang telah ditentukan.
+
+## Struktur Data
+
+### Car Data
+
+- **ID**: Slug dari nama mobil
+- **Nama**: Format `${brand} ${model} - ${unit_number}`
+- **Brand & Model**: 10 brand terkenal, masing-masing 5 model
+- **Unit**: 100 unit per model
+- **Total**: 5,000 mobil
+
+**Contoh ID**: `toyota-avanza-001`, `honda-crv-050`
+
+### Hotel Room Data
+
+- **ID**: Slug dari nama hotel + nama kamar
+- **Hotel Name**: Brand hotel terkenal
+- **Nama Kamar**: Format `${floor}${2_digit_unit_number}`
+- **Floors**: 5 lantai per hotel
+- **Units**: 20 kamar per lantai
+- **Total**: 1,500 kamar
+
+**Contoh ID**: `marriott-jakarta-101`, `ritz-carlton-jakarta-520`
+
+### Train Data
+
+- **ID**: Slug dari nama kereta + seat ID
+- **Seat ID**: Auto increment integer (1-1000)
+- **Train Name**: Nama kereta Indonesia
+- **Seats**: 1000 kursi per kereta
+- **Total**: 20,000 kursi
+
+**Contoh ID**: `argo-bromo-anggrek-1`, `bima-500`
+
+## Cara Menjalankan
+
+1. Pastikan environment variables sudah diset:
+
+   ```bash
+   export GOOGLE_PROJECT_ID="your-project-id"
+   ```
+
+2. Jalankan seeder:
+   ```bash
+   go run cmd/seeder/main.go
+   ```
+
+## Output
+
+Seeder akan menampilkan progress untuk setiap jenis data:
+
+```
+Starting database seeder...
+Starting car seeder...
+Seeding Toyota Avanza...
+Seeding Toyota Innova...
+...
+Car seeder completed. Total cars: 5000
+Starting hotel room seeder...
+Seeding Marriott Jakarta...
+...
+Hotel room seeder completed. Total rooms: 1500
+Starting train seeder...
+Seeding Argo Bromo Anggrek...
+...
+Train seeder completed. Total seats: 20000
+Database seeding completed successfully!
+```
+
+## Data yang Dihasilkan
+
+### Car Brands & Models
+
+- Toyota: Avanza, Innova, Fortuner, Camry, Corolla
+- Honda: Brio, Jazz, HR-V, CR-V, Civic
+- Suzuki: Ertiga, XL7, Ignis, Baleno, Swift
+- Daihatsu: Ayla, Calya, Xenia, Terios, Rocky
+- Mitsubishi: Xpander, Pajero, L300, Colt, Mirage
+- Nissan: Livina, Grand Livina, X-Trail, Serena, March
+- Hyundai: Brio, Creta, Santa Fe, Stargazer, Palisade
+- Kia: Picanto, Rio, Seltos, Sportage, Carnival
+- Wuling: Almaz, Cortez, Confero, Air ev, Alvez
+- MG: ZS, HS, RX5, 5, 3
+
+### Hotel Brands
+
+- Marriott Jakarta, Bandung, Surabaya, Medan
+- Ritz-Carlton Jakarta, Bandung, Surabaya
+- Mandarin Oriental Jakarta
+- Four Seasons Jakarta
+- Grand Hyatt Jakarta
+- InterContinental Jakarta
+- Sheraton Jakarta
+- Pullman Jakarta
+- Novotel Jakarta
+- Ibis Jakarta
+
+### Train Names
+
+- Argo Bromo Anggrek, Argo Lawu, Argo Parahyangan, Argo Sindoro, Argo Wilis
+- Bima, Gajayana, Harina, Kertajaya, Kutojaya
+- Lodaya, Malabar, Matarmaja, Mutiara Selatan, Purwojaya
+- Sancaka, Sembrani, Senja Utama, Serayu, Taksaka
