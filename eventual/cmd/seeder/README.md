@@ -1,11 +1,13 @@
 # Database Seeder
 
-Seeder untuk mengisi data awal ke Firestore database dengan strategi yang telah ditentukan.
+Seeder untuk mengisi data awal ke Firestore database dengan strategi yang telah ditentukan. Seeder menggunakan model yang sudah ada di `internal/*/model.go`.
 
 ## Struktur Data
 
 ### Car Data
 
+- **Collection**: `cars`
+- **Model**: `internal/car/model.go` - `Car`
 - **ID**: Slug dari nama mobil
 - **Nama**: Format `${brand} ${model} - ${unit_number}`
 - **Brand & Model**: 10 brand terkenal, masing-masing 5 model
@@ -16,6 +18,8 @@ Seeder untuk mengisi data awal ke Firestore database dengan strategi yang telah 
 
 ### Hotel Room Data
 
+- **Collection**: `hotel_rooms`
+- **Model**: `internal/hotel/model.go` - `HotelRoom`
 - **ID**: Slug dari nama hotel + nama kamar
 - **Hotel Name**: Brand hotel terkenal
 - **Nama Kamar**: Format `${floor}${2_digit_unit_number}`
@@ -27,6 +31,8 @@ Seeder untuk mengisi data awal ke Firestore database dengan strategi yang telah 
 
 ### Train Data
 
+- **Collection**: `train_seats`
+- **Model**: `internal/train/model.go` - `TrainSeat`
 - **ID**: Slug dari nama kereta + seat ID
 - **Seat ID**: Auto increment integer (1-500)
 - **Train Name**: Nama kereta Indonesia
@@ -103,3 +109,11 @@ Database seeding completed successfully!
 - Argo Bromo Anggrek, Argo Lawu, Argo Parahyangan
 - Bima, Gajayana, Harina, Kertajaya
 - Lodaya, Malabar, Matarmaja
+
+## Model yang Digunakan
+
+Seeder menggunakan model yang sudah ada di internal packages:
+
+- **Car**: `internal/car/model.go` - `Car{ID, Name}`
+- **HotelRoom**: `internal/hotel/model.go` - `HotelRoom{ID, HotelName, RoomName}`
+- **TrainSeat**: `internal/train/model.go` - `TrainSeat{ID, SeatID, TrainName}`

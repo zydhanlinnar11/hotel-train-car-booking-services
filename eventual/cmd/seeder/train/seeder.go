@@ -6,14 +6,9 @@ import (
 	"log"
 
 	"cloud.google.com/go/firestore"
+	"github.com/zydhanlinnar11/hotel-train-car-booking-services/eventual/internal/train"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/eventual/pkg/utils"
 )
-
-type TrainSeat struct {
-	ID        string `firestore:"id" json:"id"`
-	SeatID    string `firestore:"seat_id" json:"seat_id"`
-	TrainName string `firestore:"train_name" json:"train_name"`
-}
 
 var trainNames = []string{
 	"Argo Bromo Anggrek",
@@ -41,7 +36,7 @@ func Seed(ctx context.Context, client *firestore.Client) error {
 			seatID := fmt.Sprintf("%d", seatNumber)
 			seatDocID := utils.Slugify(fmt.Sprintf("%s-%s", trainName, seatID))
 
-			trainSeat := TrainSeat{
+			trainSeat := train.TrainSeat{
 				ID:        seatDocID,
 				SeatID:    seatID,
 				TrainName: trainName,
