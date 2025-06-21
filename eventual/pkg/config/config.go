@@ -3,7 +3,7 @@ package config
 import "github.com/caarlos0/env/v11"
 
 const (
-	DateFormat = "02-01-2006"
+	DateFormat = "2006-01-02"
 )
 
 type Config struct {
