@@ -77,7 +77,7 @@ func (s *service) handleReserveCar(ctx context.Context, msg event.Message) error
 		StartDate:   payload.StartDate,
 		EndDate:     payload.EndDate,
 		OrderID:     msg.CorrelationID,
-		Status:      CarStatusReserved,
+		Status:      CarReservationStatusReserved,
 	}
 
 	if err := s.repo.CreateCarReservation(ctx, carReservation); err != nil {
@@ -118,7 +118,7 @@ func (s *service) handleCancelCar(ctx context.Context, msg event.Message) error 
 		return s.publishErrorEvent(ctx, msg, err)
 	}
 
-	carReservation.Status = CarStatusAvailable
+	carReservation.Status = CarReservationStatusCancelled
 	if err := s.repo.UpdateCarReservation(ctx, carReservation); err != nil {
 		return s.publishErrorEvent(ctx, msg, err)
 	}

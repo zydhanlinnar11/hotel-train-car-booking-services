@@ -84,7 +84,8 @@ func (r *firestoreRepository) IsCarAvailable(ctx context.Context, carID string, 
 	query := r.client.Collection(carReservationCollection).
 		Where("car_id", "==", carID).
 		Where("start_date", "<=", endDate).
-		Where("end_date", ">=", startDate)
+		Where("end_date", ">=", startDate).
+		Where("status", "!=", CarReservationStatusCancelled)
 
 	aggregationQuery := query.NewAggregationQuery().WithCount("all")
 	results, err := aggregationQuery.Get(ctx)
