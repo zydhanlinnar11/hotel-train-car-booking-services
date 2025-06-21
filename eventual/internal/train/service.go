@@ -115,6 +115,9 @@ func (s *service) handleCancelSeat(ctx context.Context, msg event.Message) error
 	}
 
 	trainReservation, err := s.repo.GetTrainReservationByOrderID(ctx, payload.OrderID)
+	if errors.Is(err, ErrTrainReservationNotFound) {
+		return nil
+	}
 	if err != nil {
 		return s.publishErrorEvent(ctx, msg, err)
 	}

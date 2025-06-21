@@ -114,6 +114,9 @@ func (s *service) handleCancelCar(ctx context.Context, msg event.Message) error 
 	}
 
 	carReservation, err := s.repo.GetCarReservationByOrderID(ctx, payload.OrderID)
+	if errors.Is(err, ErrCarReservationNotFound) {
+		return nil
+	}
 	if err != nil {
 		return s.publishErrorEvent(ctx, msg, err)
 	}
