@@ -31,8 +31,8 @@ if [ $? -eq 0 ]; then
     echo "📊 Summary:"
     echo "   - Cars: 5,000 units"
     echo "   - Hotel Rooms: 1,500 rooms"
-    echo "   - Train Seats: 20,000 seats"
-    echo "   - Total: 26,500 records"
+    echo "   - Train Seats: 5,000 seats"
+    echo "   - Total: 11,500 records"
 else
     echo ""
     echo "❌ Database seeding failed!"

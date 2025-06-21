@@ -19,23 +19,13 @@ var trainNames = []string{
 	"Argo Bromo Anggrek",
 	"Argo Lawu",
 	"Argo Parahyangan",
-	"Argo Sindoro",
-	"Argo Wilis",
 	"Bima",
 	"Gajayana",
 	"Harina",
 	"Kertajaya",
-	"Kutojaya",
 	"Lodaya",
 	"Malabar",
 	"Matarmaja",
-	"Mutiara Selatan",
-	"Purwojaya",
-	"Sancaka",
-	"Sembrani",
-	"Senja Utama",
-	"Serayu",
-	"Taksaka",
 }
 
 func Seed(ctx context.Context, client *firestore.Client) error {
@@ -46,8 +36,8 @@ func Seed(ctx context.Context, client *firestore.Client) error {
 	for _, trainName := range trainNames {
 		log.Printf("Seeding %s...", trainName)
 
-		// 1000 seats per train
-		for seatNumber := 1; seatNumber <= 1000; seatNumber++ {
+		// 500 seats per train (10 trains × 500 seats = 5000 total)
+		for seatNumber := 1; seatNumber <= 500; seatNumber++ {
 			seatID := fmt.Sprintf("%d", seatNumber)
 			seatDocID := utils.Slugify(fmt.Sprintf("%s-%s", trainName, seatID))
 
@@ -64,6 +54,6 @@ func Seed(ctx context.Context, client *firestore.Client) error {
 		}
 	}
 
-	log.Printf("Train seeder completed. Total seats: %d", len(trainNames)*1000)
+	log.Printf("Train seeder completed. Total seats: %d", len(trainNames)*500)
 	return nil
 }

@@ -28,12 +28,12 @@ Seeder untuk mengisi data awal ke Firestore database dengan strategi yang telah 
 ### Train Data
 
 - **ID**: Slug dari nama kereta + seat ID
-- **Seat ID**: Auto increment integer (1-1000)
+- **Seat ID**: Auto increment integer (1-500)
 - **Train Name**: Nama kereta Indonesia
-- **Seats**: 1000 kursi per kereta
-- **Total**: 20,000 kursi
+- **Seats**: 500 kursi per kereta
+- **Total**: 5,000 kursi
 
-**Contoh ID**: `argo-bromo-anggrek-1`, `bima-500`
+**Contoh ID**: `argo-bromo-anggrek-1`, `bima-250`
 
 ## Cara Menjalankan
 
@@ -66,7 +66,7 @@ Hotel room seeder completed. Total rooms: 1500
 Starting train seeder...
 Seeding Argo Bromo Anggrek...
 ...
-Train seeder completed. Total seats: 20000
+Train seeder completed. Total seats: 5000
 Database seeding completed successfully!
 ```
 
@@ -100,7 +100,6 @@ Database seeding completed successfully!
 
 ### Train Names
 
-- Argo Bromo Anggrek, Argo Lawu, Argo Parahyangan, Argo Sindoro, Argo Wilis
-- Bima, Gajayana, Harina, Kertajaya, Kutojaya
-- Lodaya, Malabar, Matarmaja, Mutiara Selatan, Purwojaya
-- Sancaka, Sembrani, Senja Utama, Serayu, Taksaka
+- Argo Bromo Anggrek, Argo Lawu, Argo Parahyangan
+- Bima, Gajayana, Harina, Kertajaya
+- Lodaya, Malabar, Matarmaja
