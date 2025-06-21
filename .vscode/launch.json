@@ -19,6 +19,14 @@
       "mode": "auto",
       "program": "${workspaceFolder}/eventual/cmd/hotel-service/main.go",
       "envFile": "${workspaceFolder}/eventual/.env"
+    },
+    {
+      "name": "Launch Car Service",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/eventual/cmd/car-service/main.go",
+      "envFile": "${workspaceFolder}/eventual/.env"
     }
   ]
 }
