@@ -32,17 +32,17 @@ func (p *rabbitmqPublisher) Publish(ctx context.Context, routingKey string, e ev
 	}
 	defer ch.Close()
 
-	payload, err := json.Marshal(e.Payload)
+	ev, err := json.Marshal(e)
 	if err != nil {
 		return err
 	}
 
 	msg := amqp091.Publishing{
 		ContentType: "application/json",
-		Body:        payload,
+		Body:        ev,
 	}
 
-	if err := ch.PublishWithContext(ctx, "", routingKey, false, false, msg); err != nil {
+	if err := ch.PublishWithContext(ctx, "amq.topic", routingKey, false, false, msg); err != nil {
 		return err
 	}
 
@@ -60,33 +60,23 @@ func NewRabbitmqSubscriber(conn *amqp091.Connection) Subscriber {
 func (p *rabbitmqSubscriber) Subscribe(ctx context.Context, routingKey, queueName string, handler func(e event.Message)) error {
 	ch, err := p.conn.Channel()
 	if err != nil {
+		log.Printf("Failed to create channel: %v", err)
 		return err
 	}
-	defer ch.Close()
-
 	msgs, err := ch.Consume(queueName, "", true, false, false, false, nil)
 	if err != nil {
+		log.Printf("Failed to consume messages: %v", err)
 		return err
 	}
 
 	go func() {
-		for {
-			select {
-			case d, ok := <-msgs:
-				if !ok {
-					log.Printf("Message channel closed for queue: %s", queueName)
-					return
-				}
-				var e event.Message
-				if err := json.Unmarshal(d.Body, &e); err != nil {
-					log.Printf("Failed to unmarshal message: %v", err)
-					continue
-				}
-				handler(e)
-			case <-ctx.Done():
-				log.Printf("Context cancelled, stopping subscriber for queue: %s", queueName)
-				return
+		for d := range msgs {
+			var e event.Message
+			if err := json.Unmarshal(d.Body, &e); err != nil {
+				log.Printf("Failed to unmarshal message: %v", err)
+				continue
 			}
+			handler(e)
 		}
 	}()
 

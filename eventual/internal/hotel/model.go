@@ -1,0 +1,28 @@
+package hotel
+
+type HotelRoomStatus string
+
+const (
+	HotelRoomStatusAvailable HotelRoomStatus = "AVAILABLE"
+	HotelRoomStatusReserved  HotelRoomStatus = "RESERVED"
+	HotelRoomStatusBooked    HotelRoomStatus = "BOOKED"
+)
+
+type HotelRoom struct {
+	ID        string `firestore:"id" json:"id"`
+	HotelID   string `firestore:"hotel_id" json:"hotel_id"`
+	HotelName string `firestore:"hotel_name" json:"hotel_name"`
+	Name      string `firestore:"name" json:"name"`
+	Price     int    `firestore:"price" json:"price"`
+}
+
+type HotelReservation struct {
+	ID                 string          `firestore:"id" json:"id"`
+	HotelRoomID        string          `firestore:"hotel_room_id" json:"hotel_room_id"`
+	HotelRoomName      string          `firestore:"hotel_room_name" json:"hotel_room_name"`
+	HotelRoomPrice     int             `firestore:"hotel_room_price" json:"hotel_room_price"`
+	HotelRoomStartDate string          `firestore:"hotel_room_start_date" json:"hotel_room_start_date"`
+	HotelRoomEndDate   string          `firestore:"hotel_room_end_date" json:"hotel_room_end_date"`
+	OrderID            string          `firestore:"order_id" json:"order_id"`
+	Status             HotelRoomStatus `firestore:"status" json:"status"`
+}

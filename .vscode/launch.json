@@ -10,7 +10,15 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/eventual/cmd/order-service/main.go",
-      "envFile": "${workspaceFolder}/.env"
+      "envFile": "${workspaceFolder}/eventual/.env"
+    },
+    {
+      "name": "Launch Hotel Service",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/eventual/cmd/hotel-service/main.go",
+      "envFile": "${workspaceFolder}/eventual/.env"
     }
   ]
 }

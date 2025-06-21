@@ -2,6 +2,8 @@ package order
 
 import (
 	"context"
+	"encoding/json"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -128,28 +130,58 @@ func (s *service) StartSaga(ctx context.Context, payload CreateOrderPayload) (*O
 }
 
 func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error {
+	log.Println("Received saga event", msg.EventName)
 	// 1. Ambil order dari DB menggunakan msg.CorrelationID
 	order, err := s.repo.GetOrderByID(ctx, msg.CorrelationID)
 	if err != nil {
 		return err
 	}
 
-	// 2. State machine untuk memproses event
-	switch payload := msg.Payload.(type) {
-	case event.RoomReservedPayload:
+	// 2. State machine untuk memproses event berdasarkan EventName
+	switch msg.EventName {
+	case event.RoomReserved:
+		var payload event.RoomReservedPayload
+		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
+			return err
+		}
 		order.IsRoomReserved = true
 		order.HotelReservationID = payload.RoomReservationID
-	case event.CarReservedPayload:
+
+	case event.CarReserved:
+		var payload event.CarReservedPayload
+		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
+			return err
+		}
 		order.IsCarReserved = true
 		order.CarReservationID = payload.CarReservationID
-	case event.SeatReservedPayload:
+
+	case event.SeatReserved:
+		var payload event.SeatReservedPayload
+		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
+			return err
+		}
 		order.IsSeatReserved = true
 		order.TrainReservationID = payload.SeatReservationID
-	case event.RoomReservationFailedPayload:
+
+	case event.RoomReservationFailed:
+		var payload event.RoomReservationFailedPayload
+		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
+			return err
+		}
 		return s.startCompensation(ctx, order, payload.FailureReason)
-	case event.CarReservationFailedPayload:
+
+	case event.CarReservationFailed:
+		var payload event.CarReservationFailedPayload
+		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
+			return err
+		}
 		return s.startCompensation(ctx, order, payload.FailureReason)
-	case event.SeatReservationFailedPayload:
+
+	case event.SeatReservationFailed:
+		var payload event.SeatReservationFailedPayload
+		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
+			return err
+		}
 		return s.startCompensation(ctx, order, payload.FailureReason)
 	}
 
@@ -170,6 +202,17 @@ func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error
 	s.repo.UpdateOrder(ctx, order)
 
 	return nil
+}
+
+// unmarshalPayload adalah helper function untuk unmarshal JSON payload
+func (s *service) unmarshalPayload(payload any, target any) error {
+	// Convert payload to JSON bytes first
+	jsonBytes, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	// Then unmarshal to target struct
+	return json.Unmarshal(jsonBytes, target)
 }
 
 func (s *service) startCompensation(ctx context.Context, order *Order, reason string) error {
@@ -199,6 +242,13 @@ func (s *service) startCompensation(ctx context.Context, order *Order, reason st
 			Payload:       event.CancelSeatPayload{SeatReservationID: order.TrainReservationID},
 		})
 	}
+
+	// Publish event final ORDER_FAILED
+	s.publisher.Publish(ctx, string(event.OrderFailed), event.Message{
+		EventName:     event.OrderFailed,
+		CorrelationID: order.ID,
+		Payload:       event.OrderFailedPayload{OrderID: order.ID},
+	})
 
 	return nil
 }
