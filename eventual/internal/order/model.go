@@ -5,11 +5,19 @@ import "time"
 // OrderStatus merepresentasikan status dari Saga
 type OrderStatus string
 
+type ReservationStatus string
+
 const (
 	StatusPending              OrderStatus = "PENDING"
 	StatusAwaitingConfirmation OrderStatus = "AWAITING_CONFIRMATION"
 	StatusBooked               OrderStatus = "BOOKED"
 	StatusFailed               OrderStatus = "FAILED"
+)
+
+const (
+	ReservationStatusPending ReservationStatus = "PENDING"
+	ReservationStatusBooked  ReservationStatus = "BOOKED"
+	ReservationStatusFailed  ReservationStatus = "FAILED"
 )
 
 // Order adalah representasi data order di Firestore
@@ -29,12 +37,14 @@ type Order struct {
 	HotelReservationID string `firestore:"hotel_reservation_id,omitempty" json:"hotel_reservation_id,omitempty"`
 	CarReservationID   string `firestore:"car_reservation_id,omitempty" json:"car_reservation_id,omitempty"`
 	TrainReservationID string `firestore:"train_reservation_id,omitempty" json:"train_reservation_id,omitempty"`
-	FailureReason      string `firestore:"failure_reason,omitempty" json:"failure_reason,omitempty"`
 
 	// Status untuk setiap sub-transaksi
-	IsRoomReserved bool `firestore:"is_room_reserved" json:"is_room_reserved"`
-	IsCarReserved  bool `firestore:"is_car_reserved" json:"is_car_reserved"`
-	IsSeatReserved bool `firestore:"is_seat_reserved" json:"is_seat_reserved"`
+	HotelReservationStatus        ReservationStatus `firestore:"hotel_reservation_status" json:"hotel_reservation_status"`
+	CarReservationStatus          ReservationStatus `firestore:"car_reservation_status" json:"car_reservation_status"`
+	TrainReservationStatus        ReservationStatus `firestore:"train_reservation_status" json:"train_reservation_status"`
+	HotelReservationFailureReason string            `firestore:"hotel_reservation_failure_reason,omitempty" json:"hotel_reservation_failure_reason,omitempty"`
+	CarReservationFailureReason   string            `firestore:"car_reservation_failure_reason,omitempty" json:"car_reservation_failure_reason,omitempty"`
+	TrainReservationFailureReason string            `firestore:"train_reservation_failure_reason,omitempty" json:"train_reservation_failure_reason,omitempty"`
 
 	CreatedAt time.Time `firestore:"created_at" json:"created_at"`
 	UpdatedAt time.Time `firestore:"updated_at" json:"updated_at"`

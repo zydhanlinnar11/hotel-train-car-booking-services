@@ -87,6 +87,10 @@ func (s *service) StartSaga(ctx context.Context, payload CreateOrderPayload) (*O
 		CarStartDate:   carStartDate.Format(config.DateFormat),
 		CarEndDate:     carEndDate.Format(config.DateFormat),
 
+		HotelReservationStatus: ReservationStatusPending,
+		CarReservationStatus:   ReservationStatusPending,
+		TrainReservationStatus: ReservationStatusPending,
+
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -105,6 +109,7 @@ func (s *service) StartSaga(ctx context.Context, payload CreateOrderPayload) (*O
 			EndDate:   payload.HotelRoomEndDate,
 		},
 	})
+
 	s.publisher.Publish(ctx, string(event.CommandReserveCar), event.Message{
 		EventName:     event.CommandReserveCar,
 		CorrelationID: order.ID,
@@ -114,6 +119,7 @@ func (s *service) StartSaga(ctx context.Context, payload CreateOrderPayload) (*O
 			EndDate:   payload.CarEndDate,
 		},
 	})
+
 	s.publisher.Publish(ctx, string(event.CommandReserveSeat), event.Message{
 		EventName:     event.CommandReserveSeat,
 		CorrelationID: order.ID,
@@ -144,7 +150,7 @@ func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error
 		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
 			return err
 		}
-		order.IsRoomReserved = true
+		order.HotelReservationStatus = ReservationStatusBooked
 		order.HotelReservationID = payload.RoomReservationID
 
 	case event.CarReserved:
@@ -152,7 +158,7 @@ func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error
 		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
 			return err
 		}
-		order.IsCarReserved = true
+		order.CarReservationStatus = ReservationStatusBooked
 		order.CarReservationID = payload.CarReservationID
 
 	case event.SeatReserved:
@@ -160,7 +166,7 @@ func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error
 		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
 			return err
 		}
-		order.IsSeatReserved = true
+		order.TrainReservationStatus = ReservationStatusBooked
 		order.TrainReservationID = payload.SeatReservationID
 
 	case event.RoomReservationFailed:
@@ -168,29 +174,35 @@ func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error
 		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
 			return err
 		}
-		return s.startCompensation(ctx, order, payload.FailureReason)
+		order.HotelReservationStatus = ReservationStatusFailed
+		order.HotelReservationFailureReason = payload.FailureReason
 
 	case event.CarReservationFailed:
 		var payload event.CarReservationFailedPayload
 		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
 			return err
 		}
-		return s.startCompensation(ctx, order, payload.FailureReason)
+		order.CarReservationStatus = ReservationStatusFailed
+		order.CarReservationFailureReason = payload.FailureReason
 
 	case event.SeatReservationFailed:
 		var payload event.SeatReservationFailedPayload
 		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
 			return err
 		}
-		return s.startCompensation(ctx, order, payload.FailureReason)
+		order.TrainReservationStatus = ReservationStatusFailed
+		order.TrainReservationFailureReason = payload.FailureReason
 	}
 
-	// 3. Cek apakah semua reservasi sudah berhasil
-	if order.IsRoomReserved && order.IsCarReserved && order.IsSeatReserved {
-		// Jika semua berhasil, finalisasi Saga
+	// 3. Cek apakah ada yang pending
+	if order.HotelReservationStatus == ReservationStatusPending || order.CarReservationStatus == ReservationStatusPending || order.TrainReservationStatus == ReservationStatusPending {
+		return s.repo.UpdateOrder(ctx, order)
+	}
+
+	// 4. Cek apakah semua reservasi sudah berhasil
+	if order.HotelReservationStatus == ReservationStatusBooked && order.CarReservationStatus == ReservationStatusBooked && order.TrainReservationStatus == ReservationStatusBooked {
 		order.Status = StatusBooked
 		s.repo.UpdateOrder(ctx, order)
-		// Publish event final ORDER_BOOKED
 		s.publisher.Publish(ctx, string(event.OrderBooked), event.Message{
 			EventName:     event.OrderBooked,
 			CorrelationID: order.ID,
@@ -198,10 +210,8 @@ func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error
 		})
 		return nil
 	}
-	// Jika belum semua, simpan state terbaru
-	s.repo.UpdateOrder(ctx, order)
 
-	return nil
+	return s.startCompensation(ctx, order)
 }
 
 // unmarshalPayload adalah helper function untuk unmarshal JSON payload
@@ -215,33 +225,28 @@ func (s *service) unmarshalPayload(payload any, target any) error {
 	return json.Unmarshal(jsonBytes, target)
 }
 
-func (s *service) startCompensation(ctx context.Context, order *Order, reason string) error {
+func (s *service) startCompensation(ctx context.Context, order *Order) error {
 	order.Status = StatusFailed
-	order.FailureReason = reason
 	s.repo.UpdateOrder(ctx, order)
 
-	// Kirim command kompensasi untuk reservasi yang sudah berhasil
-	if order.IsRoomReserved {
-		s.publisher.Publish(ctx, string(event.CommandCancelRoom), event.Message{
-			EventName:     event.CommandCancelRoom,
-			CorrelationID: order.ID,
-			Payload:       event.CancelRoomPayload{RoomReservationID: order.HotelReservationID},
-		})
-	}
-	if order.IsCarReserved {
-		s.publisher.Publish(ctx, string(event.CommandCancelCar), event.Message{
-			EventName:     event.CommandCancelCar,
-			CorrelationID: order.ID,
-			Payload:       event.CancelCarPayload{CarReservationID: order.CarReservationID},
-		})
-	}
-	if order.IsSeatReserved {
-		s.publisher.Publish(ctx, string(event.CommandCancelSeat), event.Message{
-			EventName:     event.CommandCancelSeat,
-			CorrelationID: order.ID,
-			Payload:       event.CancelSeatPayload{SeatReservationID: order.TrainReservationID},
-		})
-	}
+	// Kirim command kompensasi untuk command yang sudah dikirim
+	// Menggunakan OrderID saja karena relasi one-to-one
+	s.publisher.Publish(ctx, string(event.CommandCancelRoom), event.Message{
+		EventName:     event.CommandCancelRoom,
+		CorrelationID: order.ID,
+		Payload:       event.CancelRoomPayload{OrderID: order.ID},
+	})
+
+	s.publisher.Publish(ctx, string(event.CommandCancelCar), event.Message{
+		EventName:     event.CommandCancelCar,
+		CorrelationID: order.ID,
+		Payload:       event.CancelCarPayload{OrderID: order.ID},
+	})
+	s.publisher.Publish(ctx, string(event.CommandCancelSeat), event.Message{
+		EventName:     event.CommandCancelSeat,
+		CorrelationID: order.ID,
+		Payload:       event.CancelSeatPayload{OrderID: order.ID},
+	})
 
 	// Publish event final ORDER_FAILED
 	s.publisher.Publish(ctx, string(event.OrderFailed), event.Message{

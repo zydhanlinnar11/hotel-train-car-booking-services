@@ -113,7 +113,7 @@ func (s *service) handleCancelCar(ctx context.Context, msg event.Message) error 
 		return s.publishErrorEvent(ctx, msg, err)
 	}
 
-	carReservation, err := s.repo.GetCarReservationByID(ctx, payload.CarReservationID)
+	carReservation, err := s.repo.GetCarReservationByOrderID(ctx, payload.OrderID)
 	if err != nil {
 		return s.publishErrorEvent(ctx, msg, err)
 	}

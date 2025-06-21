@@ -109,7 +109,7 @@ func (s *service) handleCancelRoom(ctx context.Context, msg event.Message) error
 		return s.publishErrorEvent(ctx, msg, err)
 	}
 
-	hotelReservation, err := s.repo.GetHotelReservationByID(ctx, payload.RoomReservationID)
+	hotelReservation, err := s.repo.GetHotelReservationByOrderID(ctx, payload.OrderID)
 	if err != nil {
 		return s.publishErrorEvent(ctx, msg, err)
 	}

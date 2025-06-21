@@ -19,6 +19,7 @@ type Repository interface {
 	GetHotelRoomByID(ctx context.Context, id string) (*HotelRoom, error)
 	CreateHotelReservation(ctx context.Context, hotelReservation *HotelReservation) error
 	GetHotelReservationByID(ctx context.Context, id string) (*HotelReservation, error)
+	GetHotelReservationByOrderID(ctx context.Context, orderID string) (*HotelReservation, error)
 	UpdateHotelReservation(ctx context.Context, hotelReservation *HotelReservation) error
 	IsHotelRoomAvailable(ctx context.Context, hotelRoomID string, startDate, endDate string) (bool, error)
 }
@@ -69,6 +70,25 @@ func (r *firestoreRepository) GetHotelReservationByID(ctx context.Context, id st
 
 	var hotelReservation HotelReservation
 	if err := doc.DataTo(&hotelReservation); err != nil {
+		return nil, err
+	}
+
+	return &hotelReservation, nil
+}
+
+func (r *firestoreRepository) GetHotelReservationByOrderID(ctx context.Context, orderID string) (*HotelReservation, error) {
+	query := r.client.Collection(hotelReservationCollection).Where("order_id", "==", orderID)
+	docs, err := query.Documents(ctx).GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(docs) == 0 {
+		return nil, ErrHotelReservationNotFound
+	}
+
+	var hotelReservation HotelReservation
+	if err := docs[0].DataTo(&hotelReservation); err != nil {
 		return nil, err
 	}
 

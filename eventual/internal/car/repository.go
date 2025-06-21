@@ -19,6 +19,7 @@ type Repository interface {
 	GetCarByID(ctx context.Context, id string) (*Car, error)
 	CreateCarReservation(ctx context.Context, carReservation *CarReservation) error
 	GetCarReservationByID(ctx context.Context, id string) (*CarReservation, error)
+	GetCarReservationByOrderID(ctx context.Context, orderID string) (*CarReservation, error)
 	UpdateCarReservation(ctx context.Context, carReservation *CarReservation) error
 	IsCarAvailable(ctx context.Context, carID string, startDate, endDate string) (bool, error)
 }
@@ -69,6 +70,25 @@ func (r *firestoreRepository) GetCarReservationByID(ctx context.Context, id stri
 
 	var carReservation CarReservation
 	if err := doc.DataTo(&carReservation); err != nil {
+		return nil, err
+	}
+
+	return &carReservation, nil
+}
+
+func (r *firestoreRepository) GetCarReservationByOrderID(ctx context.Context, orderID string) (*CarReservation, error) {
+	query := r.client.Collection(carReservationCollection).Where("order_id", "==", orderID)
+	docs, err := query.Documents(ctx).GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(docs) == 0 {
+		return nil, ErrCarReservationNotFound
+	}
+
+	var carReservation CarReservation
+	if err := docs[0].DataTo(&carReservation); err != nil {
 		return nil, err
 	}
 

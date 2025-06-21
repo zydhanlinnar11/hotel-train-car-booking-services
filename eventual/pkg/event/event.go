@@ -59,15 +59,15 @@ type ReserveSeatPayload struct {
 }
 
 type CancelRoomPayload struct {
-	RoomReservationID string `json:"room_reservation_id"`
+	OrderID string `json:"order_id"`
 }
 
 type CancelCarPayload struct {
-	CarReservationID string `json:"car_reservation_id"`
+	OrderID string `json:"order_id"`
 }
 
 type CancelSeatPayload struct {
-	SeatReservationID string `json:"seat_reservation_id"`
+	OrderID string `json:"order_id"`
 }
 
 type OrderBookedPayload struct {
