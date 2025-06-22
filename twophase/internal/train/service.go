@@ -31,7 +31,7 @@ func (s *Service) Prepare(ctx context.Context, req *api.PrepareRequest[TrainSeat
 		}, nil
 	}
 
-	if err := s.repo.PrepareSeatReservation(ctx, req.TransactionID, req.Payload.SeatID); err != nil {
+	if err := s.repo.PrepareSeatReservation(ctx, req.TransactionID, req.Payload.TrainSeatID); err != nil {
 		return &api.PrepareResponse{
 			Success: false,
 			Message: fmt.Sprintf("Failed to create transaction log: %v", err),

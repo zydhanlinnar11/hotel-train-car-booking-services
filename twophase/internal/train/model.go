@@ -43,6 +43,5 @@ type TwoPhaseTransaction struct {
 }
 
 type TrainSeatReservationPayload struct {
-	SeatID    string `json:"seat_id" binding:"required"`
-	TrainName string `json:"train_name" binding:"required"`
+	TrainSeatID string `json:"train_seat_id" binding:"required"`
 }
