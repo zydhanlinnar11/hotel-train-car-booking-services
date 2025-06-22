@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/pkg/api"
 )
 
 // Handler handles HTTP requests for hotel service
@@ -34,7 +35,7 @@ func (h *Handler) RegisterRoutes(r *gin.Engine) {
 
 // Prepare handles prepare phase requests
 func (h *Handler) Prepare(c *gin.Context) {
-	var req PrepareRequest
+	var req api.PrepareRequest[HotelRoomReservationPayload]
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Invalid request body",
@@ -61,7 +62,7 @@ func (h *Handler) Prepare(c *gin.Context) {
 
 // Commit handles commit phase requests
 func (h *Handler) Commit(c *gin.Context) {
-	var req CommitRequest
+	var req api.CommitRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Invalid request body",
@@ -88,7 +89,7 @@ func (h *Handler) Commit(c *gin.Context) {
 
 // Abort handles abort phase requests
 func (h *Handler) Abort(c *gin.Context) {
-	var req AbortRequest
+	var req api.AbortRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Invalid request body",

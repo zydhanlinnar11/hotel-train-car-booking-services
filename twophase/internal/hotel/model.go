@@ -47,41 +47,8 @@ type TwoPhaseTransaction struct {
 	UpdatedAt     time.Time                 `firestore:"updated_at"`
 }
 
-// PrepareRequest represents prepare phase request
-type PrepareRequest struct {
-	TransactionID string `json:"transaction_id"`
-	OrderID       string `json:"order_id"`
-	Payload       struct {
-		HotelRoomID        string `json:"hotel_room_id" binding:"required"`
-		HotelRoomStartDate string `json:"hotel_room_start_date" binding:"required"`
-		HotelRoomEndDate   string `json:"hotel_room_end_date" binding:"required"`
-	} `json:"payload"`
-}
-
-// PrepareResponse represents prepare phase response
-type PrepareResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
-
-// CommitRequest represents commit phase request
-type CommitRequest struct {
-	TransactionID string `json:"transaction_id" binding:"required"`
-}
-
-// CommitResponse represents commit phase response
-type CommitResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
-
-// AbortRequest represents abort phase request
-type AbortRequest struct {
-	TransactionID string `json:"transaction_id" binding:"required"`
-}
-
-// AbortResponse represents abort phase response
-type AbortResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
+type HotelRoomReservationPayload struct {
+	HotelRoomID        string `json:"hotel_room_id" binding:"required"`
+	HotelRoomStartDate string `json:"hotel_room_start_date" binding:"required"`
+	HotelRoomEndDate   string `json:"hotel_room_end_date" binding:"required"`
 }
