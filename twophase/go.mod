@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.5.0
 	github.com/joho/godotenv v1.5.1
+	github.com/oklog/ulid/v2 v2.1.1
 	google.golang.org/api v0.154.0
 	google.golang.org/grpc v1.60.1
 )

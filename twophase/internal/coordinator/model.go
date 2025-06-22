@@ -43,16 +43,14 @@ type Participant struct {
 
 // CreateOrderRequest represents the request to create an order
 type CreateOrderRequest struct {
-	UserID       string    `json:"user_id"`
-	HotelID      string    `json:"hotel_id"`
-	RoomID       string    `json:"room_id"`
-	CarID        string    `json:"car_id"`
-	TrainID      string    `json:"train_id"`
-	SeatID       string    `json:"seat_id"`
-	CheckInDate  time.Time `json:"check_in_date"`
-	CheckOutDate time.Time `json:"check_out_date"`
-	TravelDate   time.Time `json:"travel_date"`
-	TotalPrice   float64   `json:"total_price"`
+	HotelRoomID        string `json:"hotel_room_id" binding:"required"`
+	HotelRoomStartDate string `json:"hotel_room_start_date" binding:"required"`
+	HotelRoomEndDate   string `json:"hotel_room_end_date" binding:"required"`
+	CarID              string `json:"car_id" binding:"required"`
+	CarStartDate       string `json:"car_start_date" binding:"required"`
+	CarEndDate         string `json:"car_end_date" binding:"required"`
+	TrainSeatID        string `json:"train_seat_id" binding:"required"`
+	UserID             string `json:"user_id" binding:"required"`
 }
 
 // OrderResponse represents the response after order creation
@@ -67,7 +65,7 @@ type OrderResponse struct {
 type PrepareRequest struct {
 	TransactionID string `json:"transaction_id"`
 	OrderID       string `json:"order_id"`
-	ServiceName   string `json:"service_name"`
+	Payload       any    `json:"payload"`
 }
 
 // PrepareResponse represents the prepare phase response

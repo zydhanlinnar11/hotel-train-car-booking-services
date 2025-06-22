@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/oklog/ulid/v2"
 )
 
 // Service handles the two-phase commit coordination logic
@@ -33,8 +33,8 @@ func NewService(repo *Repository, config *Config) *Service {
 // CreateOrder initiates a two-phase commit transaction for order creation
 func (s *Service) CreateOrder(ctx context.Context, req *CreateOrderRequest) (*OrderResponse, error) {
 	// Generate transaction ID
-	transactionID := uuid.New().String()
-	orderID := uuid.New().String()
+	transactionID := ulid.Make().String()
+	orderID := ulid.Make().String()
 
 	// Create transaction log
 	log := &TransactionLog{
@@ -105,6 +105,7 @@ func (s *Service) preparePhase(ctx context.Context, transactionID string, req *C
 	prepareReq := &PrepareRequest{
 		TransactionID: transactionID,
 		OrderID:       log.OrderID,
+		Payload:       req,
 	}
 
 	allPrepared := true
