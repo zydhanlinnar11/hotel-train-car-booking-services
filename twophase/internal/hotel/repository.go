@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	HotelRoomAvailabilityCollection = "twophase_hotel_room_availability"
-	HotelRoomReservationCollection  = "twophase_hotel_room_reservation"
-	HotelRoomTransactionCollection  = "twophase_hotel_transaction"
+	HotelRoomAvailabilityCollection = "twophase_hotel_room_availabilities"
+	HotelRoomReservationCollection  = "twophase_hotel_room_reservations"
+	HotelRoomTransactionCollection  = "twophase_hotel_transactions"
 )
 
 var (
