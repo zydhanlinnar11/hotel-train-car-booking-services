@@ -51,6 +51,22 @@
       "mode": "auto",
       "program": "${workspaceFolder}/twophase/cmd/hotel-service/main.go",
       "envFile": "${workspaceFolder}/twophase/.env"
+    },
+    {
+      "name": "Launch Car Service (Twophase)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/twophase/cmd/car-service/main.go",
+      "envFile": "${workspaceFolder}/twophase/.env"
+    },
+    {
+      "name": "Launch Train Service (Twophase)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/twophase/cmd/train-service/main.go",
+      "envFile": "${workspaceFolder}/twophase/.env"
     }
   ]
 }
