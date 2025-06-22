@@ -7,8 +7,10 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/joho/godotenv"
+	carSeeder "github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/cmd/seeder/car"
 	hotelSeeder "github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/cmd/seeder/hotel"
 	trainSeeder "github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/cmd/seeder/train"
+	"github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/internal/car"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/internal/hotel"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/internal/train"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/pkg/config"
@@ -33,12 +35,13 @@ func main() {
 	}
 	defer client.Close()
 
-	// // Run car seeder
-	// log.Println("Seeding car data...")
-	// if err := car.Seed(ctx, client); err != nil {
-	// 	log.Printf("Error seeding car data: %v", err)
-	// 	os.Exit(1)
-	// }
+	// Run car seeder
+	log.Println("Seeding car data...")
+	carRepo := car.NewRepository(client)
+	if err := carSeeder.Seed(ctx, carRepo); err != nil {
+		log.Printf("Error seeding car data: %v", err)
+		os.Exit(1)
+	}
 
 	// Run hotel seeder
 	log.Println("Seeding hotel room data...")
