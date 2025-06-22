@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Order Service",
+      "name": "Launch Order Service (Eventual)",
       "type": "go",
       "request": "launch",
       "mode": "auto",
@@ -13,7 +13,7 @@
       "envFile": "${workspaceFolder}/eventual/.env"
     },
     {
-      "name": "Launch Hotel Service",
+      "name": "Launch Hotel Service (Eventual)",
       "type": "go",
       "request": "launch",
       "mode": "auto",
@@ -21,12 +21,36 @@
       "envFile": "${workspaceFolder}/eventual/.env"
     },
     {
-      "name": "Launch Car Service",
+      "name": "Launch Car Service (Eventual)",
       "type": "go",
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/eventual/cmd/car-service/main.go",
       "envFile": "${workspaceFolder}/eventual/.env"
+    },
+    {
+      "name": "Launch Train Service (Eventual)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/eventual/cmd/train-service/main.go",
+      "envFile": "${workspaceFolder}/eventual/.env"
+    },
+    {
+      "name": "Launch Coordinator Service (Twophase)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/twophase/cmd/coordinator-service/main.go",
+      "envFile": "${workspaceFolder}/twophase/.env"
+    },
+    {
+      "name": "Launch Hotel Service (Twophase)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/twophase/cmd/hotel-service/main.go",
+      "envFile": "${workspaceFolder}/twophase/.env"
     }
   ]
 }

@@ -4,70 +4,58 @@ import (
 	"time"
 )
 
-// Hotel represents a hotel entity
-type Hotel struct {
-	ID          string    `firestore:"id"`
-	Name        string    `firestore:"name"`
-	Location    string    `firestore:"location"`
-	Description string    `firestore:"description"`
-	Rating      float64   `firestore:"rating"`
-	CreatedAt   time.Time `firestore:"created_at"`
-	UpdatedAt   time.Time `firestore:"updated_at"`
+type HotelRoomReservationStatus string
+
+const (
+	HotelRoomReservationStatusCancelled HotelRoomReservationStatus = "CANCELLED"
+	HotelRoomReservationStatusReserved  HotelRoomReservationStatus = "RESERVED"
+)
+
+type TwoPhaseTransactionStatus string
+
+const (
+	TwoPhaseTransactionStatusPrepared  TwoPhaseTransactionStatus = "PREPARED"
+	TwoPhaseTransactionStatusCommitted TwoPhaseTransactionStatus = "COMMITTED"
+	TwoPhaseTransactionStatusAborted   TwoPhaseTransactionStatus = "ABORTED"
+)
+
+type HotelRoomAvailability struct {
+	RoomID    string `firestore:"room_id" json:"room_id"`
+	HotelName string `firestore:"hotel_name" json:"hotel_name"`
+	RoomName  string `firestore:"room_name" json:"room_name"`
+	Date      string `firestore:"date" json:"date"`
+	Available bool   `firestore:"available" json:"available"`
 }
 
-// Room represents a hotel room
-type Room struct {
-	ID        string  `firestore:"id"`
-	HotelID   string  `firestore:"hotel_id"`
-	Number    string  `firestore:"number"`
-	Type      string  `firestore:"type"`
-	Capacity  int     `firestore:"capacity"`
-	Price     float64 `firestore:"price"`
-	Available bool    `firestore:"available"`
-}
-
-// Reservation represents a hotel reservation
-type Reservation struct {
-	ID           string    `firestore:"id"`
-	OrderID      string    `firestore:"order_id"`
-	HotelID      string    `firestore:"hotel_id"`
-	RoomID       string    `firestore:"room_id"`
-	UserID       string    `firestore:"user_id"`
-	CheckInDate  time.Time `firestore:"check_in_date"`
-	CheckOutDate time.Time `firestore:"check_out_date"`
-	Status       string    `firestore:"status"` // "pending", "confirmed", "cancelled"
-	TotalPrice   float64   `firestore:"total_price"`
-	CreatedAt    time.Time `firestore:"created_at"`
-	UpdatedAt    time.Time `firestore:"updated_at"`
+type HotelReservation struct {
+	ID                 string                     `firestore:"id" json:"id"`
+	HotelRoomID        string                     `firestore:"hotel_room_id" json:"hotel_room_id"`
+	HotelRoomName      string                     `firestore:"hotel_room_name" json:"hotel_room_name"`
+	HotelName          string                     `firestore:"hotel_name" json:"hotel_name"`
+	HotelRoomStartDate string                     `firestore:"hotel_room_start_date" json:"hotel_room_start_date"`
+	HotelRoomEndDate   string                     `firestore:"hotel_room_end_date" json:"hotel_room_end_date"`
+	TransactionID      string                     `firestore:"transaction_id" json:"transaction_id"`
+	Status             HotelRoomReservationStatus `firestore:"status" json:"status"`
 }
 
 // TwoPhaseTransaction represents a two-phase commit transaction for hotel
 type TwoPhaseTransaction struct {
-	ID            string    `firestore:"id"`
-	TransactionID string    `firestore:"transaction_id"`
-	OrderID       string    `firestore:"order_id"`
-	Status        string    `firestore:"status"` // "prepared", "committed", "aborted"
-	ReservationID string    `firestore:"reservation_id,omitempty"`
-	CreatedAt     time.Time `firestore:"created_at"`
-	UpdatedAt     time.Time `firestore:"updated_at"`
-}
-
-// CreateReservationRequest represents request to create reservation
-type CreateReservationRequest struct {
-	OrderID      string    `json:"order_id"`
-	HotelID      string    `json:"hotel_id"`
-	RoomID       string    `json:"room_id"`
-	UserID       string    `json:"user_id"`
-	CheckInDate  time.Time `json:"check_in_date"`
-	CheckOutDate time.Time `json:"check_out_date"`
-	TotalPrice   float64   `json:"total_price"`
+	Id            string                    `firestore:"id"`
+	Status        TwoPhaseTransactionStatus `firestore:"status"` // "prepared", "committed", "aborted"
+	ReservationID string                    `firestore:"reservation_id,omitempty"`
+	CreatedAt     time.Time                 `firestore:"created_at"`
+	UpdatedAt     time.Time                 `firestore:"updated_at"`
 }
 
 // PrepareRequest represents prepare phase request
 type PrepareRequest struct {
 	TransactionID string `json:"transaction_id"`
 	OrderID       string `json:"order_id"`
-	ServiceName   string `json:"service_name"`
+	Payload       struct {
+		HotelRoomID        string `json:"hotel_room_id" binding:"required"`
+		HotelRoomStartDate string `json:"hotel_room_start_date" binding:"required"`
+		HotelRoomEndDate   string `json:"hotel_room_end_date" binding:"required"`
+	} `json:"payload"`
 }
 
 // PrepareResponse represents prepare phase response
@@ -78,9 +66,7 @@ type PrepareResponse struct {
 
 // CommitRequest represents commit phase request
 type CommitRequest struct {
-	TransactionID string `json:"transaction_id"`
-	OrderID       string `json:"order_id"`
-	ServiceName   string `json:"service_name"`
+	TransactionID string `json:"transaction_id" binding:"required"`
 }
 
 // CommitResponse represents commit phase response
@@ -91,10 +77,7 @@ type CommitResponse struct {
 
 // AbortRequest represents abort phase request
 type AbortRequest struct {
-	TransactionID string `json:"transaction_id"`
-	OrderID       string `json:"order_id"`
-	ServiceName   string `json:"service_name"`
-	Reason        string `json:"reason"`
+	TransactionID string `json:"transaction_id" binding:"required"`
 }
 
 // AbortResponse represents abort phase response

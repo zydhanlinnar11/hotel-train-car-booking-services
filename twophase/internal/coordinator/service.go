@@ -146,7 +146,7 @@ func (s *Service) commitPhase(ctx context.Context, transactionID string) bool {
 // sendPrepareRequest sends prepare request to a participant with retry logic
 func (s *Service) sendPrepareRequest(ctx context.Context, transactionID, serviceName string, req *PrepareRequest) bool {
 	serviceURL := s.config.Services[serviceName]
-	url := fmt.Sprintf("%s/api/twophase/prepare", serviceURL)
+	url := fmt.Sprintf("%s/twophase/prepare", serviceURL)
 
 	return s.sendRequestWithRetry(ctx, transactionID, serviceName, url, req, "prepare")
 }
@@ -154,7 +154,7 @@ func (s *Service) sendPrepareRequest(ctx context.Context, transactionID, service
 // sendCommitRequest sends commit request to a participant with retry logic
 func (s *Service) sendCommitRequest(ctx context.Context, transactionID, serviceName string, req *CommitRequest) bool {
 	serviceURL := s.config.Services[serviceName]
-	url := fmt.Sprintf("%s/api/twophase/commit", serviceURL)
+	url := fmt.Sprintf("%s/twophase/commit", serviceURL)
 
 	return s.sendRequestWithRetry(ctx, transactionID, serviceName, url, req, "commit")
 }
@@ -244,7 +244,7 @@ func (s *Service) rollbackTransaction(ctx context.Context, transactionID, reason
 // sendAbortRequest sends abort request to a participant
 func (s *Service) sendAbortRequest(ctx context.Context, transactionID, serviceName string, req *AbortRequest) {
 	serviceURL := s.config.Services[serviceName]
-	url := fmt.Sprintf("%s/api/twophase/abort", serviceURL)
+	url := fmt.Sprintf("%s/twophase/abort", serviceURL)
 
 	jsonData, err := json.Marshal(req)
 	if err != nil {

@@ -2,13 +2,25 @@ package hotel
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"cloud.google.com/go/firestore"
-	"google.golang.org/api/iterator"
+	"github.com/oklog/ulid/v2"
+	"github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/pkg/config"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+)
+
+const (
+	HotelRoomAvailabilityCollection = "twophase_hotel_room_availability"
+	HotelRoomReservationCollection  = "twophase_hotel_room_reservation"
+	HotelRoomTransactionCollection  = "twophase_hotel_transaction"
+)
+
+var (
+	ErrRoomNotAvailable = errors.New("room not available")
 )
 
 // Repository handles Firestore operations for hotel service
@@ -23,135 +35,13 @@ func NewRepository(client *firestore.Client) *Repository {
 	}
 }
 
-// GetRoom retrieves a room by ID
-func (r *Repository) GetRoom(ctx context.Context, roomID string) (*Room, error) {
-	collection := r.client.Collection("twophase_hotel_rooms")
-	doc := collection.Doc(roomID)
-
-	docSnap, err := doc.Get(ctx)
-	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			return nil, fmt.Errorf("room not found: %s", roomID)
-		}
-		return nil, fmt.Errorf("failed to get room: %w", err)
-	}
-
-	var room Room
-	if err := docSnap.DataTo(&room); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal room: %w", err)
-	}
-
-	return &room, nil
-}
-
-// UpdateRoomAvailability updates room availability
-func (r *Repository) UpdateRoomAvailability(ctx context.Context, roomID string, available bool) error {
-	collection := r.client.Collection("twophase_hotel_rooms")
-	doc := collection.Doc(roomID)
-
-	_, err := doc.Update(ctx, []firestore.Update{
-		{Path: "available", Value: available},
-	})
-	if err != nil {
-		return fmt.Errorf("failed to update room availability: %w", err)
-	}
-
-	return nil
-}
-
-// CreateReservation creates a new reservation
-func (r *Repository) CreateReservation(ctx context.Context, reservation *Reservation) error {
-	collection := r.client.Collection("twophase_hotel_reservations")
-	doc := collection.Doc(reservation.ID)
-
-	_, err := doc.Create(ctx, reservation)
-	if err != nil {
-		return fmt.Errorf("failed to create reservation: %w", err)
-	}
-
-	return nil
-}
-
-// GetReservationByOrderID retrieves reservation by order ID
-func (r *Repository) GetReservationByOrderID(ctx context.Context, orderID string) (*Reservation, error) {
-	collection := r.client.Collection("twophase_hotel_reservations")
-
-	query := collection.Where("order_id", "==", orderID)
-	iter := query.Documents(ctx)
-	defer iter.Stop()
-
-	doc, err := iter.Next()
-	if err == iterator.Done {
-		return nil, fmt.Errorf("reservation not found for order: %s", orderID)
-	}
-	if err != nil {
-		return nil, fmt.Errorf("failed to iterate reservations: %w", err)
-	}
-
-	var reservation Reservation
-	if err := doc.DataTo(&reservation); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal reservation: %w", err)
-	}
-
-	return &reservation, nil
-}
-
-// UpdateReservationStatus updates reservation status
-func (r *Repository) UpdateReservationStatus(ctx context.Context, reservationID, status string) error {
-	collection := r.client.Collection("twophase_hotel_reservations")
-	doc := collection.Doc(reservationID)
-
-	_, err := doc.Update(ctx, []firestore.Update{
-		{Path: "status", Value: status},
-		{Path: "updated_at", Value: time.Now()},
-	})
-	if err != nil {
-		return fmt.Errorf("failed to update reservation status: %w", err)
-	}
-
-	return nil
-}
-
-// DeleteReservation deletes a reservation
-func (r *Repository) DeleteReservation(ctx context.Context, reservationID string) error {
-	collection := r.client.Collection("twophase_hotel_reservations")
-	doc := collection.Doc(reservationID)
-
-	_, err := doc.Delete(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to delete reservation: %w", err)
-	}
-
-	return nil
-}
-
-// CreateTwoPhaseTransaction creates a two-phase transaction log
-func (r *Repository) CreateTwoPhaseTransaction(ctx context.Context, transaction *TwoPhaseTransaction) error {
-	collection := r.client.Collection("twophase_hotel_transactions")
-	doc := collection.Doc(transaction.ID)
-
-	_, err := doc.Create(ctx, transaction)
-	if err != nil {
-		return fmt.Errorf("failed to create two-phase transaction: %w", err)
-	}
-
-	return nil
-}
-
 // GetTwoPhaseTransaction retrieves a two-phase transaction
 func (r *Repository) GetTwoPhaseTransaction(ctx context.Context, transactionID string) (*TwoPhaseTransaction, error) {
-	collection := r.client.Collection("twophase_hotel_transactions")
+	ref := r.client.Collection(HotelRoomTransactionCollection).Doc(transactionID)
 
-	query := collection.Where("transaction_id", "==", transactionID)
-	iter := query.Documents(ctx)
-	defer iter.Stop()
-
-	doc, err := iter.Next()
-	if err == iterator.Done {
-		return nil, fmt.Errorf("two-phase transaction not found: %s", transactionID)
-	}
+	doc, err := ref.Get(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to iterate transactions: %w", err)
+		return nil, fmt.Errorf("failed to get transaction: %w", err)
 	}
 
 	var transaction TwoPhaseTransaction
@@ -162,53 +52,223 @@ func (r *Repository) GetTwoPhaseTransaction(ctx context.Context, transactionID s
 	return &transaction, nil
 }
 
-// UpdateTwoPhaseTransactionStatus updates two-phase transaction status
-func (r *Repository) UpdateTwoPhaseTransactionStatus(ctx context.Context, transactionID, status string) error {
-	collection := r.client.Collection("twophase_hotel_transactions")
-
-	query := collection.Where("transaction_id", "==", transactionID)
-	iter := query.Documents(context.Background())
-	defer iter.Stop()
-
-	doc, err := iter.Next()
-	if err == iterator.Done {
-		return fmt.Errorf("two-phase transaction not found: %s", transactionID)
-	}
-	if err != nil {
-		return fmt.Errorf("failed to iterate transactions: %w", err)
-	}
-
-	_, err = doc.Ref.Update(ctx, []firestore.Update{
-		{Path: "status", Value: status},
-		{Path: "updated_at", Value: time.Now()},
-	})
-	if err != nil {
-		return fmt.Errorf("failed to update transaction status: %w", err)
-	}
-
-	return nil
+func (r *Repository) getRoomAvailabilityId(roomID, date string) string {
+	return fmt.Sprintf("%s-%s", roomID, date)
 }
 
-// CheckRoomAvailability checks if a room is available for the given dates
-func (r *Repository) CheckRoomAvailability(ctx context.Context, roomID string, checkInDate, checkOutDate time.Time) (bool, error) {
-	collection := r.client.Collection("twophase_hotel_reservations")
-
-	query := collection.Where("room_id", "==", roomID).
-		Where("status", "in", []string{"pending", "confirmed"}).
-		Where("check_in_date", "<", checkOutDate).
-		Where("check_out_date", ">", checkInDate)
-
-	iter := query.Documents(ctx)
-	defer iter.Stop()
-
-	// If there are any overlapping reservations, room is not available
-	_, err := iter.Next()
-	if err == iterator.Done {
-		return true, nil // No conflicts, room is available
-	}
+func (r *Repository) getRoomAvailabilityRefs(roomID string, checkInDate, checkOutDate string) ([]*firestore.DocumentRef, error) {
+	startDate, err := time.Parse(config.DateFormat, checkInDate)
 	if err != nil {
-		return false, fmt.Errorf("failed to check room availability: %w", err)
+		return nil, fmt.Errorf("failed to parse check-in date: %w", err)
 	}
 
-	return false, nil // Room is not available
+	endDate, err := time.Parse(config.DateFormat, checkOutDate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse check-out date: %w", err)
+	}
+
+	// Iterate through the dates (inclusive)
+	var dates []string
+	for date := startDate; date.Before(endDate.AddDate(0, 0, 1)); date = date.AddDate(0, 0, 1) {
+		dates = append(dates, date.Format(config.DateFormat))
+	}
+
+	var roomAvailabilityRefs []*firestore.DocumentRef
+	for _, date := range dates {
+		roomAvailabilityRefs = append(
+			roomAvailabilityRefs,
+			r.client.Collection(HotelRoomAvailabilityCollection).
+				Doc(r.getRoomAvailabilityId(roomID, date)),
+		)
+	}
+
+	return roomAvailabilityRefs, nil
+}
+
+func (r *Repository) CommitRoomReservation(ctx context.Context, transactionID string) error {
+	transactionRef := r.client.Collection(HotelRoomTransactionCollection).Doc(transactionID)
+
+	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		transactionDoc, err := tx.Get(transactionRef)
+		if err != nil {
+			return fmt.Errorf("failed to get transaction: %w", err)
+		}
+
+		var transaction TwoPhaseTransaction
+		if err := transactionDoc.DataTo(&transaction); err != nil {
+			return fmt.Errorf("failed to unmarshal transaction: %w", err)
+		}
+
+		if transaction.Status != TwoPhaseTransactionStatusPrepared {
+			// Already committed or aborted
+			return nil
+		}
+
+		if err := tx.Update(transactionRef, []firestore.Update{
+			{Path: "status", Value: TwoPhaseTransactionStatusCommitted},
+			{Path: "updated_at", Value: time.Now()},
+		}); err != nil {
+			return fmt.Errorf("failed to update transaction: %w", err)
+		}
+
+		return nil
+	})
+}
+
+func (r *Repository) AbortRoomReservation(ctx context.Context, transactionID string) error {
+	transactionRef := r.client.Collection(HotelRoomTransactionCollection).Doc(transactionID)
+
+	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		transactionDoc, err := tx.Get(transactionRef)
+		if err != nil {
+			return fmt.Errorf("failed to get transaction: %w", err)
+		}
+
+		var transaction TwoPhaseTransaction
+		if err := transactionDoc.DataTo(&transaction); err != nil {
+			return fmt.Errorf("failed to unmarshal transaction: %w", err)
+		}
+
+		if transaction.Status != TwoPhaseTransactionStatusPrepared {
+			// Already committed or aborted
+			return nil
+		}
+
+		reservationRef := r.client.Collection(HotelRoomReservationCollection).Doc(transaction.ReservationID)
+		reservationDoc, err := tx.Get(reservationRef)
+		if err != nil {
+			return fmt.Errorf("failed to get reservation: %w", err)
+		}
+
+		var reservation HotelReservation
+		if err := reservationDoc.DataTo(&reservation); err != nil {
+			return fmt.Errorf("failed to unmarshal reservation: %w", err)
+		}
+
+		roomAvailabilityRefs, err := r.getRoomAvailabilityRefs(reservation.HotelRoomID, reservation.HotelRoomStartDate, reservation.HotelRoomEndDate)
+		if err != nil {
+			return fmt.Errorf("failed to get room availability refs: %w", err)
+		}
+
+		for _, ref := range roomAvailabilityRefs {
+			doc, err := tx.Get(ref)
+			if err != nil {
+				return fmt.Errorf("failed to get room availability: %w", err)
+			}
+
+			var roomAvailability HotelRoomAvailability
+			if err := doc.DataTo(&roomAvailability); err != nil {
+				return fmt.Errorf("failed to unmarshal room availability: %w", err)
+			}
+
+			if err := tx.Update(ref, []firestore.Update{
+				{Path: "available", Value: true},
+			}); err != nil {
+				return fmt.Errorf("failed to update room availability: %w", err)
+			}
+		}
+
+		if err := tx.Update(transactionRef, []firestore.Update{
+			{Path: "status", Value: TwoPhaseTransactionStatusAborted},
+			{Path: "updated_at", Value: time.Now()},
+		}); err != nil {
+			return fmt.Errorf("failed to update transaction: %w", err)
+		}
+
+		if err := tx.Update(reservationRef, []firestore.Update{
+			{Path: "status", Value: HotelRoomReservationStatusCancelled},
+			{Path: "updated_at", Value: time.Now()},
+		}); err != nil {
+			return fmt.Errorf("failed to update reservation: %w", err)
+		}
+
+		return nil
+	})
+}
+
+// PrepareRoomReservation prepares a room reservation
+func (r *Repository) PrepareRoomReservation(ctx context.Context, transactionID, roomID string, checkInDate, checkOutDate string) error {
+	roomAvailabilityRefs, err := r.getRoomAvailabilityRefs(roomID, checkInDate, checkOutDate)
+	if err != nil {
+		return fmt.Errorf("failed to get room availability refs: %w", err)
+	}
+
+	if len(roomAvailabilityRefs) == 0 {
+		return ErrRoomNotAvailable
+	}
+
+	return r.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		var roomAvailability HotelRoomAvailability
+		for _, ref := range roomAvailabilityRefs {
+			doc, err := tx.Get(ref)
+			if status.Code(err) == codes.NotFound {
+				return ErrRoomNotAvailable
+			}
+			if err != nil {
+				return fmt.Errorf("failed to get room availability: %w", err)
+			}
+
+			if err := doc.DataTo(&roomAvailability); err != nil {
+				return fmt.Errorf("failed to unmarshal room availability: %w", err)
+			}
+
+			if !roomAvailability.Available {
+				return ErrRoomNotAvailable
+			}
+
+			roomAvailability.Available = false
+
+			if err := tx.Update(ref, []firestore.Update{
+				{Path: "available", Value: false},
+			}); err != nil {
+				return fmt.Errorf("failed to update room availability: %w", err)
+			}
+		}
+
+		hotelRoomReservation := &HotelReservation{
+			ID:                 ulid.Make().String(),
+			TransactionID:      transactionID,
+			HotelRoomID:        roomID,
+			HotelRoomName:      roomAvailability.RoomName,
+			HotelName:          roomAvailability.HotelName,
+			HotelRoomStartDate: checkInDate,
+			HotelRoomEndDate:   checkOutDate,
+			Status:             HotelRoomReservationStatusReserved,
+		}
+
+		hotelRoomReservationRef := r.client.Collection(HotelRoomReservationCollection).Doc(hotelRoomReservation.ID)
+		if err := tx.Create(hotelRoomReservationRef, hotelRoomReservation); err != nil {
+			return fmt.Errorf("failed to create hotel room reservation: %w", err)
+		}
+
+		twoPhaseTransaction := &TwoPhaseTransaction{
+			Id:            transactionID,
+			Status:        TwoPhaseTransactionStatusPrepared,
+			ReservationID: hotelRoomReservation.ID,
+			CreatedAt:     time.Now(),
+			UpdatedAt:     time.Now(),
+		}
+
+		twoPhaseTransactionRef := r.client.Collection(HotelRoomTransactionCollection).Doc(twoPhaseTransaction.Id)
+		if err := tx.Create(twoPhaseTransactionRef, twoPhaseTransaction); err != nil {
+			return fmt.Errorf("failed to create two-phase transaction: %w", err)
+		}
+
+		return nil
+	})
+}
+
+func (r *Repository) BulkWriteHotelRoomAvailability(ctx context.Context, hotelRoomAvailabilities []HotelRoomAvailability) error {
+	collection := r.client.Collection(HotelRoomAvailabilityCollection)
+	bw := r.client.BulkWriter(ctx)
+
+	for _, hotelRoomAvailability := range hotelRoomAvailabilities {
+		docRef := collection.Doc(r.getRoomAvailabilityId(hotelRoomAvailability.RoomID, hotelRoomAvailability.Date))
+		bw.Set(docRef, hotelRoomAvailability)
+	}
+
+	// Flush all writes
+	bw.Flush()
+
+	return nil
 }
