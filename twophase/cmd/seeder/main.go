@@ -8,7 +8,9 @@ import (
 	"cloud.google.com/go/firestore"
 	"github.com/joho/godotenv"
 	hotelSeeder "github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/cmd/seeder/hotel"
+	trainSeeder "github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/cmd/seeder/train"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/internal/hotel"
+	"github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/internal/train"
 	"github.com/zydhanlinnar11/hotel-train-car-booking-services/twophase/pkg/config"
 )
 
@@ -30,7 +32,6 @@ func main() {
 		log.Fatalf("Failed to create Firestore client: %v", err)
 	}
 	defer client.Close()
-	repo := hotel.NewRepository(client)
 
 	// // Run car seeder
 	// log.Println("Seeding car data...")
@@ -41,17 +42,19 @@ func main() {
 
 	// Run hotel seeder
 	log.Println("Seeding hotel room data...")
-	if err := hotelSeeder.Seed(ctx, repo); err != nil {
+	hotelRepo := hotel.NewRepository(client)
+	if err := hotelSeeder.Seed(ctx, hotelRepo); err != nil {
 		log.Printf("Error seeding hotel room data: %v", err)
 		os.Exit(1)
 	}
 
-	// // Run train seeder
-	// log.Println("Seeding train data...")
-	// if err := train.Seed(ctx, client); err != nil {
-	// 	log.Printf("Error seeding train data: %v", err)
-	// 	os.Exit(1)
-	// }
+	// Run train seeder
+	log.Println("Seeding train data...")
+	trainRepo := train.NewRepository(client)
+	if err := trainSeeder.Seed(ctx, trainRepo); err != nil {
+		log.Printf("Error seeding train data: %v", err)
+		os.Exit(1)
+	}
 
 	log.Println("Database seeding completed successfully!")
 }
