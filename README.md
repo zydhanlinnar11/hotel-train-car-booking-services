@@ -34,7 +34,7 @@ Langkah-langkah umum dalam pengujian:
 3. Catat hasil pengukuran
 4. Hapus data pada database
 
-### Subtes A: Load Testing (Mendapatkan staleness time, troughput, latency, dan komponen yang mengakibatkan latency)
+### Load Testing (Mendapatkan staleness time, troughput, latency, dan komponen yang mengakibatkan latency)
 
 1. Pakai JSR223 buat bikin dynamic request (start/end date dibuat konstan 2025-06-28)
 2. hotel_room_id, car_id, dan train_seat_id diambil dari DB, sedangkan user_id akan diiterasi dari 1 hingga N.
@@ -42,11 +42,4 @@ Langkah-langkah umum dalam pengujian:
 4. Throughput/latency didapatkan langsung dari JMeter, staleness time didapatkan dari selisih waktu antara created_at dan done_at pada tabel orders (waktu untuk mencapai konsistensi atau berapa lama transaksi tersebut diproses)
 5. Komponen yang mengakibatkan latency dapat diukur dari selisih antara created_at dan car_done_at, hotel_done_at, dan train_done_at pada tabel order
 
-> Seluruh step di atas akan dilakukan dengan 100, 500, 1000, dan 5000 concurrent requests
-
-### Subtes B: Consistency testing
-
-1. Pakai JSR223 buat bikin dynamic request (start/end date dibuat konstan 2025-06-28)
-2. Setiap kombinasi hotel_room_id, car_id, dan train_seat_id akan disimulasikan diorder oleh 10 user yang berbeda pada tanggal yang sama
-3. Hit endpoint `POST /orders` menggunakan parameter dari poin 1 dan 2
-4. Dilakukan query ke tabel transaksi pada masing-masing services, pastikan hotel_room_id, car_id, dan train_seat_id tidak ada yang memiliki status reserved lebih dari 1 user (hanya boleh 1 user yang bookingnya berhasil)
+> Seluruh step di atas akan dilakukan dengan 100, 500, 1000 concurrent requests
