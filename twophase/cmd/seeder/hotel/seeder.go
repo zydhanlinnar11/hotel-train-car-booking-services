@@ -16,16 +16,55 @@ var hotelBrands = []string{
 	"Mandarin Oriental Jakarta",
 	"Four Seasons Jakarta",
 	"Grand Hyatt Jakarta",
-	// "InterContinental Jakarta",
-	// "Sheraton Jakarta",
-	// "Pullman Jakarta",
-	// "Novotel Jakarta",
-	// "Ibis Jakarta",
-	// "Marriott Bandung",
-	// "Ritz-Carlton Bandung",
-	// "Marriott Surabaya",
-	// "Ritz-Carlton Surabaya",
-	// "Marriott Medan",
+	"InterContinental Jakarta",
+	"Sheraton Jakarta",
+	"Pullman Jakarta",
+	"Novotel Jakarta",
+	"Ibis Jakarta",
+	"Marriott Bandung",
+	"Ritz-Carlton Bandung",
+	"Marriott Surabaya",
+	"Ritz-Carlton Surabaya",
+	"Marriott Medan",
+	"Hotel Indonesia Kempinski Jakarta",
+	"Shangri-La Hotel Jakarta",
+	"W Jakarta",
+	"Conrad Jakarta",
+	"Westin Jakarta",
+	"Le Meridien Jakarta",
+	"Aloft Jakarta",
+	"Element Jakarta",
+	"Courtyard Jakarta",
+	"Residence Inn Jakarta",
+	"Fairfield Jakarta",
+	"Springhill Suites Jakarta",
+	"TownePlace Suites Jakarta",
+	"Protea Hotel Jakarta",
+	"AC Hotel Jakarta",
+	"Moxy Jakarta",
+	"Gaylord Hotels Jakarta",
+	"Delta Hotels Jakarta",
+	"St. Regis Jakarta",
+	"Luxury Collection Jakarta",
+	"Tribute Portfolio Jakarta",
+	"Design Hotels Jakarta",
+	"Autograph Collection Jakarta",
+	"Marriott Executive Apartments Jakarta",
+	"Marriott Vacation Club Jakarta",
+	"Ritz-Carlton Reserve Jakarta",
+	"Edition Hotels Jakarta",
+	"Bulgari Hotels Jakarta",
+	"Park Hyatt Jakarta",
+	"Andaz Jakarta",
+	"Hyatt Regency Jakarta",
+	"Hyatt Place Jakarta",
+	"Hyatt House Jakarta",
+	"Grand Hyatt Bandung",
+	"Hyatt Regency Bandung",
+	"Grand Hyatt Surabaya",
+	"Hyatt Regency Surabaya",
+	"Grand Hyatt Medan",
+	"Hyatt Regency Medan",
 }
 
 func Seed(ctx context.Context, repo *hotel.Repository) error {
@@ -42,19 +81,16 @@ func Seed(ctx context.Context, repo *hotel.Repository) error {
 				roomName := fmt.Sprintf("%d%02d", floor, unitNumber)
 				roomID := utils.Slugify(fmt.Sprintf("%s-%s", hotelName, roomName))
 
-				// 10 days of availability
-				for i := 0; i < 10; i++ {
-					date := time.Now().AddDate(0, 0, i)
-					hotelRoom := hotel.HotelRoomAvailability{
-						RoomID:    roomID,
-						HotelName: hotelName,
-						RoomName:  roomName,
-						Date:      date.Format(time.DateOnly),
-						Available: true,
-					}
-
-					hotelRoomAvailabilities = append(hotelRoomAvailabilities, hotelRoom)
+				date := time.Now().AddDate(0, 0, -1)
+				hotelRoom := hotel.HotelRoomAvailability{
+					RoomID:    roomID,
+					HotelName: hotelName,
+					RoomName:  roomName,
+					Date:      date.Format(time.DateOnly),
+					Available: true,
 				}
+
+				hotelRoomAvailabilities = append(hotelRoomAvailabilities, hotelRoom)
 			}
 		}
 	}
