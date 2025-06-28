@@ -96,6 +96,10 @@ func (r *Repository) UpdateParticipantStatus(ctx context.Context, transactionID,
 			if status == "failed" {
 				log.Participants[i].RetryCount++
 			}
+			if status == "committed" || status == "aborted" {
+				tmp := time.Now()
+				log.Participants[i].DoneAt = &tmp
+			}
 			break
 		}
 	}

@@ -22,6 +22,7 @@ type TransactionLog struct {
 	OrderID         string            `firestore:"order_id"`
 	Status          TransactionStatus `firestore:"status"`
 	Participants    []Participant     `firestore:"participants"`
+	DoneAt          *time.Time        `firestore:"done_at,omitempty"`
 	CreatedAt       time.Time         `firestore:"created_at"`
 	UpdatedAt       time.Time         `firestore:"updated_at"`
 	TimeoutAt       time.Time         `firestore:"timeout_at"`
@@ -34,11 +35,12 @@ type TransactionLog struct {
 
 // Participant represents a service participating in the transaction
 type Participant struct {
-	ServiceName string `firestore:"service_name"`
-	ServiceURL  string `firestore:"service_url"`
-	Status      string `firestore:"status"` // "prepared", "committed", "aborted", "failed"
-	Error       string `firestore:"error,omitempty"`
-	RetryCount  int    `firestore:"retry_count"`
+	ServiceName string     `firestore:"service_name"`
+	ServiceURL  string     `firestore:"service_url"`
+	Status      string     `firestore:"status"` // "prepared", "committed", "aborted", "failed"
+	DoneAt      *time.Time `firestore:"done_at,omitempty"`
+	Error       string     `firestore:"error,omitempty"`
+	RetryCount  int        `firestore:"retry_count"`
 }
 
 // CreateOrderRequest represents the request to create an order
