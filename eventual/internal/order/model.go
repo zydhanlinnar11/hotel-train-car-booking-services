@@ -46,6 +46,11 @@ type Order struct {
 	CarReservationFailureReason   string            `firestore:"car_reservation_failure_reason,omitempty" json:"car_reservation_failure_reason,omitempty"`
 	TrainReservationFailureReason string            `firestore:"train_reservation_failure_reason,omitempty" json:"train_reservation_failure_reason,omitempty"`
 
+	CarDoneAt   time.Time `firestore:"car_done_at,omitempty" json:"car_done_at,omitempty"`
+	TrainDoneAt time.Time `firestore:"train_done_at,omitempty" json:"train_done_at,omitempty"`
+	HotelDoneAt time.Time `firestore:"hotel_done_at,omitempty" json:"hotel_done_at,omitempty"`
+	DoneAt      time.Time `firestore:"done_at,omitempty" json:"done_at,omitempty"`
+
 	CreatedAt time.Time `firestore:"created_at" json:"created_at"`
 	UpdatedAt time.Time `firestore:"updated_at" json:"updated_at"`
 }

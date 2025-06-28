@@ -152,6 +152,7 @@ func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error
 		}
 		order.HotelReservationStatus = ReservationStatusBooked
 		order.HotelReservationID = payload.RoomReservationID
+		order.HotelDoneAt = time.Now()
 
 	case event.CarReserved:
 		var payload event.CarReservedPayload
@@ -160,7 +161,7 @@ func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error
 		}
 		order.CarReservationStatus = ReservationStatusBooked
 		order.CarReservationID = payload.CarReservationID
-
+		order.CarDoneAt = time.Now()
 	case event.SeatReserved:
 		var payload event.SeatReservedPayload
 		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
@@ -168,7 +169,7 @@ func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error
 		}
 		order.TrainReservationStatus = ReservationStatusBooked
 		order.TrainReservationID = payload.SeatReservationID
-
+		order.TrainDoneAt = time.Now()
 	case event.RoomReservationFailed:
 		var payload event.RoomReservationFailedPayload
 		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
@@ -176,7 +177,7 @@ func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error
 		}
 		order.HotelReservationStatus = ReservationStatusFailed
 		order.HotelReservationFailureReason = payload.FailureReason
-
+		order.HotelDoneAt = time.Now()
 	case event.CarReservationFailed:
 		var payload event.CarReservationFailedPayload
 		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
@@ -184,7 +185,7 @@ func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error
 		}
 		order.CarReservationStatus = ReservationStatusFailed
 		order.CarReservationFailureReason = payload.FailureReason
-
+		order.CarDoneAt = time.Now()
 	case event.SeatReservationFailed:
 		var payload event.SeatReservationFailedPayload
 		if err := s.unmarshalPayload(msg.Payload, &payload); err != nil {
@@ -192,6 +193,7 @@ func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error
 		}
 		order.TrainReservationStatus = ReservationStatusFailed
 		order.TrainReservationFailureReason = payload.FailureReason
+		order.TrainDoneAt = time.Now()
 	}
 
 	// 3. Cek apakah ada yang pending
@@ -202,6 +204,7 @@ func (s *service) ProcessSagaEvent(ctx context.Context, msg event.Message) error
 	// 4. Cek apakah semua reservasi sudah berhasil
 	if order.HotelReservationStatus == ReservationStatusBooked && order.CarReservationStatus == ReservationStatusBooked && order.TrainReservationStatus == ReservationStatusBooked {
 		order.Status = StatusBooked
+		order.DoneAt = time.Now()
 		s.repo.UpdateOrder(ctx, order)
 		s.publisher.Publish(ctx, string(event.OrderBooked), event.Message{
 			EventName:     event.OrderBooked,
